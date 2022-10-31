@@ -37,6 +37,7 @@ return require("packer").startup( function(use)
     guibg = "bg",
     guifg = "#957CC6"
   },
+  interval = 100,
   no_exec_files = { "packer" },
   symbols = { "━", "┃", "┣", "┫", "╋", "┻", "┳" },
   win_opts = {
