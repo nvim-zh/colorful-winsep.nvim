@@ -14,12 +14,30 @@ local defaultopts = {
   highlight = { guifg = "#957CC6", guibg = "bg" },
   win_opts = { style = 'minimal', relative = 'editor' },
   no_exec_files = { "packer" },
-  direction = { right = 'l', left = 'h', down = 'j', up = 'k' }
+  direction = { right = 'l', left = 'h', down = 'j', up = 'k' },
+  interval = 100
 }
 
 function M:highlight()
   local opts = M.config.highlight
   vim.api.nvim_set_hl(0, 'NvimSeparator', { fg = opts.guifg, bg = opts.guibg })
+end
+
+function M:win_resize()
+  local interval = M.config.interval
+  local last_pos = vim.api.nvim_win_get_position(0)
+  local width = vim.fn.winwidth(0)
+  local height = vim.fn.winwidth(0)
+  local timer = vim.loop.new_timer()
+  timer:start(0, interval, vim.schedule_wrap(function()
+    local pos = vim.api.nvim_win_get_position(0)
+    if last_pos[1] ~= pos[1] or last_pos[2] ~= pos[2] or width ~= fn.winwidth(0) or height ~= fn.winheight(0) then
+      last_pos = pos
+      width = fn.winwidth(0)
+      height = fn.winheight(0)
+      M:create_float_win()
+    end
+  end))
 end
 
 function M:can_create()
@@ -198,7 +216,7 @@ function M.setup(opts)
     group = M.auto_group,
     callback = function()
       M:highlight()
-      M:create_float_win()
+      --M:create_float_win()
     end
   })
   api.nvim_create_autocmd({ "VimLeave" }, {
@@ -208,6 +226,7 @@ function M.setup(opts)
       M:close_buf_space()
     end
   })
+  M:win_resize()
 end
 
 return M
