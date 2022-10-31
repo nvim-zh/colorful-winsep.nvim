@@ -10,10 +10,10 @@ local M = {}
 
 
 local defaultopts = {
-  symbols = { "━", "┃", "┣", "┫", "╋", "┻", "┳" },
-  highlight = { guifg = "#957CC6", guibg = "bg" },
+  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
   win_opts = { style = 'minimal', relative = 'editor' },
   no_exec_files = { "packer" },
+  highlight = { guifg = "#957CC6", guibg = "bg" },
   direction = { right = 'l', left = 'h', down = 'j', up = 'k' },
   interval = 100
 }
@@ -58,7 +58,8 @@ function M:new_buffer()
   M.buf_down = api.nvim_create_buf(false, false)
 end
 
-function M:initbuf()
+function M:setbuf()
+  local direction = M.config.direction
   -- left
   local symbols = M.config.symbols
   if M.win_up ~= nil then
@@ -85,6 +86,12 @@ function M:initbuf()
     for i = 1, len do
       str[i] = symbols[2]
     end
+    if M:direction_have(direction.up) then
+      str[1] = symbols[3]
+    end
+    if M:direction_have(direction.down) then
+      str[len] = symbols[5]
+    end
     api.nvim_buf_set_lines(M.buf_left, 0, -1, false, str)
   end
 
@@ -93,6 +100,12 @@ function M:initbuf()
     local str = { "" }
     for i = 1, len do
       str[i] = symbols[2]
+    end
+    if M:direction_have(direction.up) then
+      str[1] = symbols[4]
+    end
+    if M:direction_have(direction.down) then
+      str[len] = symbols[6]
     end
     api.nvim_buf_set_lines(M.buf_right, 0, -1, false, str)
   end
@@ -116,8 +129,13 @@ function M:create_float_win()
   if M:direction_have(direction.left) then
     local opts = M.config.win_opts
     opts.width = 1
-    opts.height = cursor_win_height
-    opts.row = cursor_win_pos[1]
+    if M:direction_have(direction.up) and M:direction_have(direction.down) then
+      opts.height = cursor_win_height + 2
+    else
+      opts.height = cursor_win_height + 1
+    end
+    --opts.height = cursor_win_height
+    opts.row = cursor_win_pos[1] - 1
     opts.col = cursor_win_pos[2] - 1
     M.win_left = api.nvim_open_win(M.buf_left, false, opts)
     api.nvim_win_set_option(M.win_left, 'winhl', 'Normal:NvimSeparator')
@@ -126,8 +144,13 @@ function M:create_float_win()
   if M:direction_have(direction.right) then
     local opts = M.config.win_opts
     opts.width = 1
-    opts.height = cursor_win_height
-    opts.row = cursor_win_pos[1]
+    if M:direction_have(direction.up) and M:direction_have(direction.down) then
+      opts.height = cursor_win_height + 2
+    else
+      opts.height = cursor_win_height + 1
+    end
+    --opts.height = cursor_win_height
+    opts.row = cursor_win_pos[1] - 1
     opts.col = cursor_win_pos[2] + cursor_win_width
     M.win_right = api.nvim_open_win(M.buf_right, false, opts)
     api.nvim_win_set_option(M.win_right, 'winhl', 'Normal:NvimSeparator')
@@ -162,7 +185,7 @@ function M:create_float_win()
     M.win_down = api.nvim_open_win(M.buf_down, false, opts)
     api.nvim_win_set_option(M.win_down, 'winhl', 'Normal:NvimSeparator')
   end
-  M.initbuf()
+  M.setbuf()
 end
 
 function M:close_win_space()

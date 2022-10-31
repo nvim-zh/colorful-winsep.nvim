@@ -39,7 +39,7 @@ return require("packer").startup( function(use)
   },
   interval = 100,
   no_exec_files = { "packer" },
-  symbols = { "━", "┃", "┣", "┫", "╋", "┻", "┳" },
+  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
   win_opts = {
     relative = "editor",
     style = "minimal"
