@@ -131,6 +131,8 @@ function M:create_float_win()
     opts.width = 1
     if M:direction_have(direction.up) and M:direction_have(direction.down) then
       opts.height = cursor_win_height + 2
+    elseif not M:direction_have(direction.up) and not M:direction_have(direction.down) then
+      opts.height = cursor_win_height
     else
       opts.height = cursor_win_height + 1
     end
@@ -146,6 +148,8 @@ function M:create_float_win()
     opts.width = 1
     if M:direction_have(direction.up) and M:direction_have(direction.down) then
       opts.height = cursor_win_height + 2
+    elseif not M:direction_have(direction.up) and not M:direction_have(direction.down) then
+      opts.height = cursor_win_height
     else
       opts.height = cursor_win_height + 1
     end
