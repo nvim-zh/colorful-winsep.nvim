@@ -1,7 +1,6 @@
 # colorful-winsep.nvim
 
-https://user-images.githubusercontent.com/57088952/198973680-77c6d8f7-73fa-40a8-9c98-1f1d56defeb7.mp4
-
+https://user-images.githubusercontent.com/57088952/199006940-f6687efc-fe0c-42eb-8b13-06b7931210ca.mp4
 > Can configurable dividing line
 
 ## install
