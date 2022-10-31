@@ -8,13 +8,13 @@
 Using plug:
 
 ```lua
-Plug 'colorful-winsep.nvim'
+Plug 'nvim-zh/colorful-winsep.nvim'
 ```
 
 Using Packer:
 ```lua
 return require("packer").startup( function(use)
- 	use "colorful-winsep.nvim"
+ 	use "nvim-zh/colorful-winsep.nvim"
  end
 )
 ``` 
