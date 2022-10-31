@@ -54,8 +54,5 @@ return require("packer").startup( function(use)
 require('colorful-winsep').setup({})
 ```
 
-## Thank you
-- Thank [jdhao](https://github.com/jdhao)  technical support and encouragement
-
 ## License
 This plugin is released under the MIT License.
