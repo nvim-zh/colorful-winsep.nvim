@@ -12,7 +12,7 @@ local M = {}
 local defaultopts = {
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
   win_opts = { style = 'minimal', relative = 'editor' },
-  no_exec_files = { "packer" },
+  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
   highlight = { guifg = "#957CC6", guibg = "bg" },
   direction = { right = 'l', left = 'h', down = 'j', up = 'k' },
   interval = 100
