@@ -38,7 +38,7 @@ return require("packer").startup( function(use)
     guifg = "#957CC6"
   },
   interval = 100,
-  no_exec_files = { "packer" },
+  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
   win_opts = {
     relative = "editor",
