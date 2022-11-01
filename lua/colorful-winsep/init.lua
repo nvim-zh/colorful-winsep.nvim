@@ -13,7 +13,7 @@ local defaultopts = {
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
   win_opts = { style = 'minimal', relative = 'editor' },
   no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-  highlight = { guifg = "#957CC6", guibg = "bg" },
+  highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
   direction = { right = 'l', left = 'h', down = 'j', up = 'k' },
   interval = 100
 }
