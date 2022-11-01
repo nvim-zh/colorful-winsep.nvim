@@ -33,7 +33,7 @@ return require("packer").startup( function(use)
     up = "k"
   },
   highlight = {
-    guibg = "bg",
+    guibg = vim.api.nvim_get_hl_by_name("Normal", true)["background"],
     guifg = "#957CC6"
   },
   interval = 100,
