@@ -43,15 +43,15 @@ end
 function M:can_create()
   local cursor_win_filetype = vim.bo.filetype
   if vim.fn.win_gettype(0) == "popup" then
-    return true
+    return false
   end
   local no_exec_files = M.config.no_exec_files
   for i = 1, #no_exec_files do
     if cursor_win_filetype == no_exec_files[i] then
-      return true
+      return false
     end
   end
-  return false
+  return true
 end
 
 function M:new_buffer()
@@ -117,7 +117,7 @@ end
 function M:create_float_win()
   M:close_win_space()
   M:close_buf_space()
-  if M:can_create() then
+  if not M:can_create() then
     return
   end
   M:new_buffer()
