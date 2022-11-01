@@ -121,8 +121,10 @@ function M:create_float_win()
   local cursor_win_pos = api.nvim_win_get_position(0)
   local cursor_win_width = fn.winwidth(0)
   local cursor_win_height = fn.winheight(0)
-  if vim.o.winbar ~= '' then
-    cursor_win_height = cursor_win_height + 1
+  if fn.has('nvim-0.8') then
+    if vim.o.winbar ~= '' then
+      cursor_win_height = cursor_win_height + 1
+    end
   end
   local direction = M.config.direction
   -- left
