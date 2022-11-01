@@ -36,6 +36,7 @@ return require("packer").startup( function(use)
     guibg = vim.api.nvim_get_hl_by_name("Normal", true)["background"],
     guifg = "#957CC6"
   },
+  -- refresh interval
   interval = 100,
   no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
