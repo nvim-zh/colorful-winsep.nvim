@@ -3,7 +3,7 @@
 https://user-images.githubusercontent.com/57088952/199041710-7f234dc8-2ab0-4cb1-81dc-ae65d2dc16e9.mp4
 > Can configurable dividing line
 
-## install
+## Install
 ### Using a plugin manager
 
 Using plug:
@@ -21,8 +21,7 @@ return require("packer").startup( function(use)
 ``` 
 
 ---
-<details>
-<summary>default configuration</summary>
+## Default configuration
 
 ```lua
 {
@@ -46,7 +45,6 @@ return require("packer").startup( function(use)
   }
 })
 ```
-</details>
 
 
 ## Setup
