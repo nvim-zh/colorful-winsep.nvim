@@ -53,5 +53,9 @@ return require("packer").startup( function(use)
 require('colorful-winsep').setup({})
 ```
 
+# Todolist
+- [ ] Refactor more delicate logic for creating floating windows
+- [ ] will provide enable and disable api
+
 ## License
 This plugin is released under the MIT License.
