@@ -238,12 +238,12 @@ end
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", defaultopts, opts)
   M.auto_group = api.nvim_create_augroup("NvimSeparator", { clear = true })
-  api.nvim_create_autocmd({ "WinEnter", "VimResized", "BufCreate", "BufEnter", "BufWinEnter", "CursorHold" }
+  api.nvim_create_autocmd({ "WinEnter" }
     , {
     group = M.auto_group,
     callback = function()
       M:highlight()
-      --M:create_float_win()
+      M:create_float_win()
     end
   })
   api.nvim_create_autocmd({ "VimLeave" }, {
