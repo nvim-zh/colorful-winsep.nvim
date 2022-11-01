@@ -11,7 +11,6 @@ local M = {}
 
 local defaultopts = {
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-  status = false,
   win_opts = { style = 'minimal', relative = 'editor' },
   no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
   highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
@@ -91,10 +90,10 @@ function M:setbuf()
     for i = 1, len do
       str[i] = symbols[2]
     end
-    if M:direction_have(direction.up) then
+    if M:direction_have(direction.up) or vim.o.laststatus ~= 3 then
       str[1] = symbols[3]
     end
-    if M:direction_have(direction.down) then
+    if M:direction_have(direction.down) or vim.o.laststatus ~= 3 then
       str[len] = symbols[5]
     end
     api.nvim_buf_set_lines(M.buf_left, 0, -1, false, str)
@@ -109,7 +108,7 @@ function M:setbuf()
     if M:direction_have(direction.up) then
       str[1] = symbols[4]
     end
-    if M:direction_have(direction.down) then
+    if M:direction_have(direction.down) or vim.o.laststatus ~= 3 then
       str[len] = symbols[6]
     end
     api.nvim_buf_set_lines(M.buf_right, 0, -1, false, str)
@@ -136,7 +135,7 @@ function M:create_float_win()
   if M:direction_have(direction.left) then
     local opts = M.config.win_opts
     opts.width = 1
-    if M:direction_have(direction.up) and M:direction_have(direction.down) then
+    if M:direction_have(direction.up) and (M:direction_have(direction.down) or vim.o.laststatus ~= 3) then
       opts.height = cursor_win_height + 2
     elseif not M:direction_have(direction.up) and not M:direction_have(direction.down) then
       opts.height = cursor_win_height
@@ -163,7 +162,7 @@ function M:create_float_win()
   if M:direction_have(direction.right) then
     local opts = M.config.win_opts
     opts.width = 1
-    if M:direction_have(direction.up) and M:direction_have(direction.down) then
+    if M:direction_have(direction.up) and (M:direction_have(direction.down) or vim.o.laststatus ~= 3) then
       opts.height = cursor_win_height + 2
     elseif not M:direction_have(direction.up) and not M:direction_have(direction.down) then
       opts.height = cursor_win_height
@@ -197,7 +196,7 @@ function M:create_float_win()
     api.nvim_win_set_option(M.win_up, 'winhl', 'Normal:NvimSeparator')
   end
   -- down
-  if M:direction_have(direction.down) then
+  if M:direction_have(direction.down) and vim.o.laststatus == 3 then
     local opts = M.config.win_opts
     opts.width = cursor_win_width
     opts.height = 1
