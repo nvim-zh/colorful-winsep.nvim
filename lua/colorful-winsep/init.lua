@@ -142,7 +142,11 @@ function M:create_float_win()
       opts.height = cursor_win_height + 1
     end
     --opts.height = cursor_win_height
-    opts.row = cursor_win_pos[1] - 1
+    if not M:direction_have(direction.up) and vim.o.showtabline > 1 then
+      opts.row = cursor_win_pos[1]
+    else
+      opts.row = cursor_win_pos[1] - 1
+    end
     opts.col = cursor_win_pos[2] - 1
     M.win_left = api.nvim_open_win(M.buf_left, false, opts)
     api.nvim_win_set_option(M.win_left, 'winhl', 'Normal:NvimSeparator')
@@ -159,7 +163,11 @@ function M:create_float_win()
       opts.height = cursor_win_height + 1
     end
     --opts.height = cursor_win_height
-    opts.row = cursor_win_pos[1] - 1
+    if not M:direction_have(direction.up) and vim.o.showtabline > 1 then
+      opts.row = cursor_win_pos[1]
+    else
+      opts.row = cursor_win_pos[1] - 1
+    end
     opts.col = cursor_win_pos[2] + cursor_win_width
     M.win_right = api.nvim_open_win(M.buf_right, false, opts)
     api.nvim_win_set_option(M.win_right, 'winhl', 'Normal:NvimSeparator')
