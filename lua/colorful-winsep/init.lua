@@ -11,6 +11,7 @@ local M = {}
 
 local defaultopts = {
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+  status = false,
   win_opts = { style = 'minimal', relative = 'editor' },
   no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
   highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
@@ -59,6 +60,10 @@ function M:new_buffer()
   M.buf_right = api.nvim_create_buf(false, false)
   M.buf_up = api.nvim_create_buf(false, false)
   M.buf_down = api.nvim_create_buf(false, false)
+  api.nvim_buf_set_option(M.buf_left, "buftype", "nofile")
+  api.nvim_buf_set_option(M.buf_right, "buftype", "nofile")
+  api.nvim_buf_set_option(M.buf_up, "buftype", "nofile")
+  api.nvim_buf_set_option(M.buf_down, "buftype", "nofile")
 end
 
 function M:setbuf()
@@ -259,7 +264,7 @@ function M.setup(opts)
       M:create_float_win()
     end
   })
-  api.nvim_create_autocmd({ "VimLeave" }, {
+  api.nvim_create_autocmd({ "ExitPre" }, {
     group = M.auto_group,
     callback = function()
       M:close_win_space()
