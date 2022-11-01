@@ -26,14 +26,11 @@ end
 
 function M:win_resize()
   local interval = M.config.interval
-  local last_pos = vim.api.nvim_win_get_position(0)
   local width = vim.fn.winwidth(0)
   local height = vim.fn.winwidth(0)
   local timer = vim.loop.new_timer()
   timer:start(0, interval, vim.schedule_wrap(function()
-    local pos = vim.api.nvim_win_get_position(0)
-    if last_pos[1] ~= pos[1] or last_pos[2] ~= pos[2] or width ~= fn.winwidth(0) or height ~= fn.winheight(0) then
-      last_pos = pos
+    if width ~= fn.winwidth(0) or height ~= fn.winheight(0) then
       width = fn.winwidth(0)
       height = fn.winheight(0)
       M:create_float_win()
@@ -146,9 +143,15 @@ function M:create_float_win()
     else
       opts.height = cursor_win_height + 1
     end
-    --opts.height = cursor_win_height
-    if not M:direction_have(direction.up) and vim.o.showtabline > 1 then
+
+    if not M:direction_have(direction.up) and vim.o.showtabline == 2 then
       opts.row = cursor_win_pos[1]
+    elseif not M:direction_have(direction.up) and vim.o.showtabline == 1 then
+      if fn.tabpagenr("$") > 1 then
+        opts.row = cursor_win_pos[1]
+      else
+        opts.row = cursor_win_pos[1] - 1
+      end
     else
       opts.row = cursor_win_pos[1] - 1
     end
@@ -167,9 +170,15 @@ function M:create_float_win()
     else
       opts.height = cursor_win_height + 1
     end
-    --opts.height = cursor_win_height
-    if not M:direction_have(direction.up) and vim.o.showtabline > 1 then
+
+    if not M:direction_have(direction.up) and vim.o.showtabline == 2 then
       opts.row = cursor_win_pos[1]
+    elseif not M:direction_have(direction.up) and vim.o.showtabline == 1 then
+      if fn.tabpagenr("$") > 1 then
+        opts.row = cursor_win_pos[1]
+      else
+        opts.row = cursor_win_pos[1] - 1
+      end
     else
       opts.row = cursor_win_pos[1] - 1
     end
@@ -180,11 +189,6 @@ function M:create_float_win()
   -- up
   if M:direction_have(direction.up) then
     local opts = M.config.win_opts
-    --if M:direction_have(direction.left) and M:direction_have(direction.right) then
-    --  opts.width = cursor_win_width + 2
-    --else
-    --  opts.width = cursor_win_width + 1
-    --end
     opts.width = cursor_win_width
     opts.height = 1
     opts.row = cursor_win_pos[1] - 1
@@ -195,11 +199,6 @@ function M:create_float_win()
   -- down
   if M:direction_have(direction.down) then
     local opts = M.config.win_opts
-    --if M:direction_have(direction.left) and M:direction_have(direction.right) then
-    --  opts.width = cursor_win_width + 2
-    --else
-    --  opts.width = cursor_win_width + 1
-    --end
     opts.width = cursor_win_width
     opts.height = 1
     opts.row = cursor_win_pos[1] + cursor_win_height
@@ -246,7 +245,6 @@ function M:direction_have(direction)
   local winnum = vim.fn.winnr()
   api.nvim_command('wincmd ' .. direction)
   if winnum ~= vim.fn.winnr() then
-    --local pos = api.nvim_win_get_position(vim.fn.winnr())
     api.nvim_command("exe " .. winnum .. "\"wincmd w\"")
     return true
   end
