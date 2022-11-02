@@ -9,11 +9,11 @@ local fn = vim.fn
 local M = {}
 local view = require("colorful-winsep.view")
 
-function M:NvimSeparatorShow()
-  view:create_dividing_win()
+function M.NvimSeparatorShow()
+  view.create_dividing_win()
 end
 
-function M:NvimSeparatorDel()
+function M.NvimSeparatorDel()
 end
 
 function M.setup(opts)
