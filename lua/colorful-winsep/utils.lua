@@ -5,7 +5,8 @@ local M = {
   defaultopts = {
     symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
     no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-    highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
+    -- highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
+    highlight = { guifg = "#957CC6", guibg = "#FF0000" },
     interval = 100
   },
   direction = { left = 'h', right = 'l', up = 'k', down = 'j' },
@@ -18,19 +19,32 @@ local M = {
 function M.can_create(no_exec_files)
   local cursor_win_filetype = bo.filetype
   if vim.fn.win_gettype(0) == 'popup' then -- Skip the floating window
+    M.c_win = api.nvim_get_current_win()
     return false
   end
-  local win = api.nvim_get_current_win()
-  if M.c_win == win then
-    return false
-  end
+  --local win = api.nvim_get_current_win()
+  --if M.c_win == win then
+  --  return false
+  --end
   for i = 1, #no_exec_files do
     if no_exec_files[i] == cursor_win_filetype then
+      M.c_win = api.nvim_get_current_win()
       return false
     end
   end
-  M.c_win = win
+  --M.c_win = win
   return true
+end
+
+--- is old create
+function M.isCreated()
+  local win = api.nvim_get_current_win()
+  if M.c_win == win then
+    return true
+  else
+    M.c_win = win
+    return false
+  end
 end
 
 --- Determine if there are neighbors in the direction
@@ -60,12 +74,10 @@ function M.create_direction_win_option(direction)
     end
   end
   -- vertical line
-  if direction == M.direction.left or direction == direction.right then
+  if direction == M.direction.left or direction == M.direction.right then
     opts.width = 1
     if M.direction_have(M.direction.up) and (M.direction_have(M.direction.down) or vim.o.laststatus ~= 3) then
       opts.height = cursor_win_height + 2
-    elseif not M.direction_have(M.direction.up) and not M.direction_have(M.direction.down) then
-      opts.height = cursor_win_height
     else
       opts.height = cursor_win_height + 1
     end
@@ -97,7 +109,6 @@ function M.create_direction_win_option(direction)
     end
     opts.col = cursor_win_pos[2]
   end
-  vim.notify(vim.inspect(opts))
   return opts
 end
 
