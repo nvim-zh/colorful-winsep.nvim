@@ -64,7 +64,7 @@ end
 ---@param direction : { left = 'h', right = 'l', up = 'k', down = 'j' }
 ---@return:opts
 function M.create_direction_win_option(direction)
-  local opts = { style = 'minimal', relative = 'editor', height = 0, width = 0, row = 0, col = 0, zindex = 10 }
+  local opts = { style = 'minimal', relative = 'editor', zindex = 10, focusable = false }
   local cursor_win_pos = api.nvim_win_get_position(0)
   local cursor_win_width = fn.winwidth(0)
   local cursor_win_height = fn.winheight(0)
