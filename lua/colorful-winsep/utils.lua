@@ -5,8 +5,7 @@ local M = {
   defaultopts = {
     symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
     no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-    -- highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
-    highlight = { guifg = "#957CC6", guibg = "#FF0000" },
+    highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
     interval = 100
   },
   direction = { left = 'h', right = 'l', up = 'k', down = 'j' },
@@ -17,7 +16,6 @@ local M = {
 ---@param no_exec_files
 ---@return: boolean
 function M.can_create(no_exec_files)
-  local cursor_win_filetype = bo.filetype
   if vim.fn.win_gettype(0) == 'popup' then -- Skip the floating window
     M.c_win = api.nvim_get_current_win()
     return false
@@ -26,6 +24,7 @@ function M.can_create(no_exec_files)
   --if M.c_win == win then
   --  return false
   --end
+  local cursor_win_filetype = bo.filetype
   for i = 1, #no_exec_files do
     if no_exec_files[i] == cursor_win_filetype then
       M.c_win = api.nvim_get_current_win()

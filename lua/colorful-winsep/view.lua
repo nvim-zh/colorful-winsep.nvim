@@ -113,6 +113,10 @@ function M.set_config(opts)
   M.config = utils.defaultopts
 end
 
+function M.isOpenLock()
+  return utils.lock
+end
+
 function M.resize_auto_show_float_win()
   if M.width ~= fn.winwidth(0) or M.height ~= fn.winheight(0) then
     if M.create_dividing_win() then
