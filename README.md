@@ -44,7 +44,7 @@ require('colorful-winsep').setup({})
 ```
 
 # Todolist
-- [ ] Refactor more delicate logic for creating floating windows
+- [x] Refactor more delicate logic for creating floating windows
 - [ ] will provide enable and disable api
 
 ## License

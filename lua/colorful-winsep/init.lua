@@ -6,11 +6,14 @@
 
 local api = vim.api
 local fn = vim.fn
-local M = {}
+local M = {
+  lock = false
+}
 local view = require("colorful-winsep.view")
 
 function M.NvimSeparatorShow()
-  if view.create_dividing_win() then
+  view.lock = true
+  if view.create_dividing_win(true) then
     view.set_buf_char()
     view.start_timer()
     --else
@@ -18,6 +21,18 @@ function M.NvimSeparatorShow()
     --    view.set_buf_char()
     --  end
   end
+  view.lock = false
+end
+
+function M.SeparatorShow()
+  --M.NvimSeparatorDel()
+  view.lock = true
+  -- @todo
+  if view.create_dividing_win(false) then
+    view.set_buf_char()
+    view.start_timer()
+  end
+  view.lock = false
 end
 
 function M.NvimSeparatorDel()
@@ -29,15 +44,23 @@ function M.setup(opts)
   view.set_config(opts)
   view.highlight()
   M.auto_group = api.nvim_create_augroup("NvimSeparator", { clear = true })
-  api.nvim_create_autocmd({ "WinEnter" }, {
-    group = M.auto_group,
-    callback = function()
-      M.NvimSeparatorShow()
-    end
-  })
+  if view.config.auto_show then
+    api.nvim_create_autocmd({ "WinEnter" }, {
+      group = M.auto_group,
+      callback = function()
+        if M.lock then
+          return
+        end
+        M.NvimSeparatorShow()
+      end
+    })
+  end
   api.nvim_create_autocmd({ "WinLeave" }, {
     group = M.auto_group,
     callback = function()
+      if M.lock then
+        return
+      end
       M.NvimSeparatorDel()
     end
   })

@@ -7,14 +7,14 @@ local M = {
   bufs = {},
   width = 0,
   height = 0,
-  timers = {}
+  timers = {},
 }
 
 --- Create floating win show  line
 ---@return
-function M.create_dividing_win()
+function M.create_dividing_win(status)
   if utils.can_create(M.config.no_exec_files) then
-    if utils.isCreated() then
+    if status and utils.isCreated() then
       return false
     end
     local direction = utils.direction
@@ -44,7 +44,9 @@ function M.move_dividing_win()
   end
   for key, _ in pairs(M.wins) do
     local opts = utils.create_direction_win_option(key)
-    api.nvim_win_set_config(M.wins[key], opts)
+    if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) then
+      api.nvim_win_set_config(M.wins[key], opts)
+    end
   end
   return true
 end
@@ -52,11 +54,17 @@ end
 --- close show line for floating win
 function M.close_dividing()
   for key, _ in pairs(M.wins) do
-    api.nvim_win_close(M.wins[key], true)
+    if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) then
+      api.nvim_win_close(M.wins[key], true)
+      M.wins[key] = nil
+    end
   end
   M.wins = {}
   for key, _ in pairs(M.bufs) do
-    api.nvim_buf_delete(M.bufs[key], { force = true })
+    if M.bufs[key] ~= nil and api.nvim_buf_is_valid(M.bufs[key]) then
+      api.nvim_buf_delete(M.bufs[key], { force = true })
+      M.bufs[key] = nil
+    end
   end
   M.bufs = {}
 end
@@ -113,13 +121,9 @@ function M.set_config(opts)
   M.config = utils.defaultopts
 end
 
-function M.isOpenLock()
-  return utils.lock
-end
-
 function M.resize_auto_show_float_win()
   if M.width ~= fn.winwidth(0) or M.height ~= fn.winheight(0) then
-    if M.create_dividing_win() then
+    if M.create_dividing_win(true) then
       M.set_buf_char()
     elseif M.move_dividing_win() then
       M.set_buf_char()

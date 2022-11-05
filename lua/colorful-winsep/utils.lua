@@ -6,7 +6,8 @@ local M = {
     symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
     no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
     highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
-    interval = 100
+    interval = 100,
+    auto_show = true
   },
   direction = { left = 'h', right = 'l', up = 'k', down = 'j' },
   c_win = -1
@@ -51,9 +52,9 @@ end
 ---@return: boolean
 function M.direction_have(direction)
   local winnum = vim.fn.winnr()
-  api.nvim_command('wincmd ' .. direction)
+  vim.cmd.wincmd(direction)
   if winnum ~= vim.fn.winnr() then
-    api.nvim_command("exe " .. winnum .. "\"wincmd w\"")
+    vim.cmd.wincmd(winnum .. "w")
     return true
   end
   return false
@@ -63,7 +64,7 @@ end
 ---@param direction : { left = 'h', right = 'l', up = 'k', down = 'j' }
 ---@return:opts
 function M.create_direction_win_option(direction)
-  local opts = { style = 'minimal', relative = 'editor', height = 0, width = 0, row = 0, col = 0 }
+  local opts = { style = 'minimal', relative = 'editor', height = 0, width = 0, row = 0, col = 0, zindex = 10 }
   local cursor_win_pos = api.nvim_win_get_position(0)
   local cursor_win_width = fn.winwidth(0)
   local cursor_win_height = fn.winheight(0)
