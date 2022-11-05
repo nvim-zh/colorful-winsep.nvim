@@ -25,14 +25,10 @@ return require("packer").startup( function(use)
 
 ```lua
 {
-  highlight = {
-    guibg = vim.api.nvim_get_hl_by_name("Normal", true)["background"],
-    guifg = "#957CC6"
-  },
-  -- refresh interval
-  interval = 100,
-  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+    symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+    no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
+    highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
+    interval = 100
 }
 ```
 
