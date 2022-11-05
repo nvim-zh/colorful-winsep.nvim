@@ -78,6 +78,8 @@ function M.create_direction_win_option(direction)
     opts.width = 1
     if M.direction_have(M.direction.up) and (M.direction_have(M.direction.down) or vim.o.laststatus ~= 3) then
       opts.height = cursor_win_height + 2
+    elseif not M.direction_have(M.direction.up) and not M.direction_have(M.direction.down) then
+      opts.height = cursor_win_height
     else
       opts.height = cursor_win_height + 1
     end
@@ -99,7 +101,7 @@ function M.create_direction_win_option(direction)
     end
   end
   -- horizontal line
-  if direction == M.direction.up or direction == M.direction.down then
+  if direction == M.direction.up or (direction == M.direction.down and vim.o.laststatus == 3) then
     opts.width = cursor_win_width
     opts.height = 1
     if direction == M.direction.up then
@@ -108,6 +110,9 @@ function M.create_direction_win_option(direction)
       opts.row = cursor_win_pos[1] + cursor_win_height
     end
     opts.col = cursor_win_pos[2]
+  end
+  if opts.height == 0 and opts.width == 0 then
+    return nil
   end
   return opts
 end

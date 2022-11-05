@@ -19,8 +19,8 @@ function M.create_dividing_win()
     end
     local direction = utils.direction
     for _, value in pairs(direction) do
-      if utils.direction_have(value) then
-        local opts = utils.create_direction_win_option(value)
+      local opts = utils.create_direction_win_option(value)
+      if utils.direction_have(value) and opts ~= nil then
         local buf = api.nvim_create_buf(false, false)
         M.bufs[value] = buf
         api.nvim_buf_set_option(buf, "buftype", "nofile")
