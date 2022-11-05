@@ -55,7 +55,7 @@ function M.setup(opts)
       end
     })
   end
-  api.nvim_create_autocmd({ "WinLeave" }, {
+  api.nvim_create_autocmd({ "WinLeave", "CmdlineLeave" }, {
     group = M.auto_group,
     callback = function()
       if M.lock then
