@@ -25,25 +25,11 @@ return require("packer").startup( function(use)
 
 ```lua
 {
-  direction = {
-    down = "j",
-    left = "h",
-    right = "l",
-    up = "k"
-  },
-  highlight = {
-    guibg = vim.api.nvim_get_hl_by_name("Normal", true)["background"],
-    guifg = "#957CC6"
-  },
-  -- refresh interval
-  interval = 100,
-  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-  win_opts = {
-    relative = "editor",
-    style = "minimal"
-  }
-})
+    symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+    no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
+    highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
+    interval = 100
+}
 ```
 
 
@@ -54,7 +40,7 @@ require('colorful-winsep').setup({})
 ```
 
 # Todolist
-- [ ] Refactor more delicate logic for creating floating windows
+- [x] Refactor more delicate logic for creating floating windows
 - [ ] will provide enable and disable api
 
 ## License
