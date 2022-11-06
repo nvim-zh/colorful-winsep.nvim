@@ -25,10 +25,17 @@ return require("packer").startup( function(use)
 
 ```lua
 {
-    symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-    no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-    highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
-    interval = 100
+  highlight = {
+    guibg = "#16161E",
+    guifg = "#1F3442"
+  },
+  interval = 30,
+  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
+  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+  close_event = function()
+  end,
+  create_event = function()
+  end
 }
 ```
 
@@ -41,7 +48,7 @@ require('colorful-winsep').setup({})
 
 # Todolist
 - [x] Refactor more delicate logic for creating floating windows
-- [ ] will provide enable and disable api
+- [x] ~~will provide enable and disable api~~ `create_event` and `close_event`
 
 ## License
 This plugin is released under the MIT License.
