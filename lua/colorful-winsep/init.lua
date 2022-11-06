@@ -31,11 +31,14 @@ function M.setup(opts)
   view.highlight()
   M.auto_group = api.nvim_create_augroup("NvimSeparator", { clear = true })
   if view.config.enable then
-    api.nvim_create_autocmd({ "WinEnter", "WinScrolled", "WinNew", "VimResized" }, {
+    api.nvim_create_autocmd({ "WinEnter", "WinScrolled", "WinNew", "VimResized", "WinClosed" }, {
       group = M.auto_group,
-      callback = function()
+      callback = function(opts)
         if M.lock then
           return
+        end
+        if opts.event == "WinClosed" then
+          M.NvimSeparatorDel()
         end
         M.NvimSeparatorShow()
       end
