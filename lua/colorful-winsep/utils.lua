@@ -7,10 +7,18 @@ local M = {
     no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
     highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
     interval = 100,
-    auto_show = true
+    enable = true,
+    create_event = function()
+      vim.notify("create_event")
+      return true
+    end,
+    close_event = function()
+      vim.notify("close_event")
+      return true
+    end
   },
   direction = { left = 'h', right = 'l', up = 'k', down = 'j' },
-  c_win = -1
+  c_win = -1,
 }
 
 --- Judge whether the current can be started and colorful line
@@ -21,10 +29,10 @@ function M.can_create(no_exec_files)
     M.c_win = api.nvim_get_current_win()
     return false
   end
-  --local win = api.nvim_get_current_win()
-  --if M.c_win == win then
-  --  return false
-  --end
+  local win = api.nvim_get_current_win()
+  if M.c_win == win then
+    return false
+  end
   local cursor_win_filetype = bo.filetype
   for i = 1, #no_exec_files do
     if no_exec_files[i] == cursor_win_filetype then
@@ -32,7 +40,7 @@ function M.can_create(no_exec_files)
       return false
     end
   end
-  --M.c_win = win
+  M.c_win = win
   return true
 end
 
@@ -64,7 +72,8 @@ end
 ---@param direction : { left = 'h', right = 'l', up = 'k', down = 'j' }
 ---@return:opts
 function M.create_direction_win_option(direction)
-  local opts = { style = 'minimal', relative = 'editor', height = 0, width = 0, row = 0, col = 0, zindex = 10 }
+  local opts = { style = 'minimal', relative = 'editor', zindex = 10, focusable = false, height = 0, width = 0, row = 0,
+    col = 0 }
   local cursor_win_pos = api.nvim_win_get_position(0)
   local cursor_win_width = fn.winwidth(0)
   local cursor_win_height = fn.winheight(0)
@@ -78,6 +87,8 @@ function M.create_direction_win_option(direction)
     opts.width = 1
     if M.direction_have(M.direction.up) and (M.direction_have(M.direction.down) or vim.o.laststatus ~= 3) then
       opts.height = cursor_win_height + 2
+    elseif not M.direction_have(M.direction.up) and not M.direction_have(M.direction.down) and vim.o.laststatus ~= 3 then
+      opts.height = cursor_win_height + 1
     elseif not M.direction_have(M.direction.up) and not M.direction_have(M.direction.down) then
       opts.height = cursor_win_height
     else
@@ -111,7 +122,7 @@ function M.create_direction_win_option(direction)
     end
     opts.col = cursor_win_pos[2]
   end
-  if opts.height == 0 and opts.width == 0 then
+  if opts.height == 0 and opts.width == 0 and opts.row == 0 and opts.col == 0 then
     return nil
   end
   return opts
@@ -123,9 +134,6 @@ function M.set_user_config(opts)
   if type(opts) == 'table' and opts ~= {} then
     M.defaultopts = vim.tbl_deep_extend("force", M.defaultopts, opts)
   end
-end
-
-function M.set_space_line()
 end
 
 return M

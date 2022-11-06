@@ -5,47 +5,33 @@
 -- @blog        : https://denstiny.github.io
 
 local api = vim.api
-local fn = vim.fn
-local M = {
-  lock = false
-}
 local view = require("colorful-winsep.view")
+local M = { lock = false }
 
 function M.NvimSeparatorShow()
-  view.lock = true
-  if view.create_dividing_win(true) then
+  M.lock = true
+  if view.create_dividing_win() then
     view.set_buf_char()
-    view.start_timer()
-    --else
-    --  if view.move_dividing_win() then
-    --    view.set_buf_char()
-    --  end
+  else
+    if view.move_dividing_win() then
+      view.set_buf_char()
+    end
   end
-  view.lock = false
-end
-
-function M.SeparatorShow()
-  --M.NvimSeparatorDel()
-  view.lock = true
-  -- @todo
-  if view.create_dividing_win(false) then
-    view.set_buf_char()
-    view.start_timer()
-  end
-  view.lock = false
+  M.lock = false
+  view.config.create_event()
 end
 
 function M.NvimSeparatorDel()
-  view.stop_timer()
   view.close_dividing()
+  view.config.close_event()
 end
 
 function M.setup(opts)
   view.set_config(opts)
   view.highlight()
   M.auto_group = api.nvim_create_augroup("NvimSeparator", { clear = true })
-  if view.config.auto_show then
-    api.nvim_create_autocmd({ "WinEnter" }, {
+  if view.config.enable then
+    api.nvim_create_autocmd({ "WinEnter", "WinScrolled", "WinNew", "VimResized", "InsertEnter" }, {
       group = M.auto_group,
       callback = function()
         if M.lock then
@@ -55,15 +41,35 @@ function M.setup(opts)
       end
     })
   end
-  api.nvim_create_autocmd({ "WinLeave" }, {
+  api.nvim_create_autocmd({ "WinLeave", "BufModifiedSet" }, {
     group = M.auto_group,
-    callback = function()
-      if M.lock then
+    callback = function(opts)
+      if ModifiedSet_no_closed_solt(opts) then
         return
       end
       M.NvimSeparatorDel()
     end
   })
+  view.start_timer()
+end
+
+function ModifiedSet_no_closed_solt(opts)
+  if opts.event == "BufModifiedSet" then
+    local filetype_lock = false
+    for i = 1, #view.config.no_exec_files do
+      if view.config.no_exec_files[i] == vim.bo.filetype then
+        filetype_lock = true
+      end
+    end
+    if not filetype_lock then
+      return true
+    end
+  end
+  if M.lock then
+    return true
+  else
+    return false
+  end
 end
 
 return M
