@@ -60,9 +60,7 @@ end
 ---@return: boolean
 function M.direction_have(direction)
   local winnum = vim.fn.winnr()
-  vim.cmd.wincmd(direction)
-  if winnum ~= vim.fn.winnr() then
-    vim.cmd.wincmd(winnum .. "w")
+  if vim.fn.winnr(direction) ~= winnum then
     return true
   end
   return false
