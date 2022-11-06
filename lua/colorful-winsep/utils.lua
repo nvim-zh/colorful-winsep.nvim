@@ -9,12 +9,8 @@ local M = {
     interval = 100,
     enable = true,
     create_event = function()
-      vim.notify("create_event")
-      return true
     end,
     close_event = function()
-      vim.notify("close_event")
-      return true
     end
   },
   direction = { left = 'h', right = 'l', up = 'k', down = 'j' },
