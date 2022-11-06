@@ -2,21 +2,20 @@ local api = vim.api
 local fn = vim.fn
 local utils = require('colorful-winsep.utils')
 local M = {
-  config = utils.defaultopts,
   wins = {},
   bufs = {},
   width = 0,
   height = 0,
-  timers = {},
+  width = fn.winwidth(0),
+  height = fn.winheight(0),
+  timers = {}
 }
 
 --- Create floating win show  line
 ---@return
-function M.create_dividing_win(status)
+function M.create_dividing_win()
   if utils.can_create(M.config.no_exec_files) then
-    if status and utils.isCreated() then
-      return false
-    end
+    M.close_dividing()
     local direction = utils.direction
     for _, value in pairs(direction) do
       local opts = utils.create_direction_win_option(value)
@@ -123,7 +122,7 @@ end
 
 function M.resize_auto_show_float_win()
   if M.width ~= fn.winwidth(0) or M.height ~= fn.winheight(0) then
-    if M.create_dividing_win(true) then
+    if M.create_dividing_win() then
       M.set_buf_char()
     elseif M.move_dividing_win() then
       M.set_buf_char()
