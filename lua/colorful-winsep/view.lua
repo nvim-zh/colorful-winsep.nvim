@@ -129,6 +129,7 @@ function M.resize_auto_show_float_win()
     end
     M.width = fn.winwidth(0)
     M.height = fn.winheight(0)
+    M.config.create_event()
   end
 end
 
