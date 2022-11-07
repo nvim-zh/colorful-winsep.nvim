@@ -6,6 +6,7 @@
 
 local api = vim.api
 local view = require("colorful-winsep.view")
+local fn = vim.fn
 local M = { lock = false }
 
 function M.NvimSeparatorShow()
@@ -38,6 +39,10 @@ function M.setup(opts)
           return
         end
         if opts.event == "WinClosed" then
+          local winnr = fn.bufwinid(opts.buf)
+          if fn.win_gettype(winnr) == 'popup' then
+            return
+          end
           M.NvimSeparatorDel()
         end
         M.NvimSeparatorShow()
