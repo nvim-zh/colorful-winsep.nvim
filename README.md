@@ -37,10 +37,10 @@ return require("packer").startup( function(use)
   -- Split line symbol definition
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
   close_event = function()
-    -- Executed after creating the window divider
+    -- Executed after closing the window divider
   end,
   create_event = function()
-    -- Executed after closing the window divider
+    -- Executed after creating the window divider
   end
 }
 ```
