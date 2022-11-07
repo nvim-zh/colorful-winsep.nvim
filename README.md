@@ -45,6 +45,10 @@ return require("packer").startup( function(use)
 }
 ```
 
+### `api`
+
+`NvimSeparatorDel` close cursor win winsep
+`NvimSeparatorShow` cursor win show winsep (Cannot be used on already created windows)
 
 ## Setup
 
