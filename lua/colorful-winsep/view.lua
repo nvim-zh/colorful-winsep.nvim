@@ -4,8 +4,6 @@ local utils = require('colorful-winsep.utils')
 local M = {
   wins = {},
   bufs = {},
-  width = 0,
-  height = 0,
   width = fn.winwidth(0),
   height = fn.winheight(0),
   timers = {}
@@ -134,7 +132,7 @@ function M.resize_auto_show_float_win()
 end
 
 function M.start_timer()
-  timer = vim.loop.new_timer()
+  local timer = vim.loop.new_timer()
   timer:start(0, M.config.interval, vim.schedule_wrap(M.resize_auto_show_float_win))
   table.insert(M.timers, timer)
 end
