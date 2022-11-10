@@ -15,6 +15,7 @@ local M = {
   },
   direction = { left = 'h', right = 'l', up = 'k', down = 'j' },
   c_win = -1,
+  pos = api.nvim_win_get_position(0)
 }
 
 --- Judge whether the current can be started and colorful line
@@ -41,12 +42,14 @@ function M.can_create(no_exec_files)
 end
 
 --- is old create
-function M.isCreated()
-  local win = api.nvim_get_current_win()
-  if M.c_win == win then
+function M.isWinMove()
+  --local win = api.nvim_get_current_win()
+  local pos = api.nvim_win_get_position(0)
+  if M.pos[1] ~= pos[1] or M.pos[2] ~= pos[2] then
+    M.pos = pos
+    M.c_win = -1
     return true
   else
-    M.c_win = win
     return false
   end
 end

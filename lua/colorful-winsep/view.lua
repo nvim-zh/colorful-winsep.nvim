@@ -119,7 +119,7 @@ function M.set_config(opts)
 end
 
 function M.resize_auto_show_float_win()
-  if M.width ~= fn.winwidth(0) or M.height ~= fn.winheight(0) then
+  if M.width ~= fn.winwidth(0) or M.height ~= fn.winheight(0) or utils.isWinMove() then
     if M.create_dividing_win() then
       M.set_buf_char()
     elseif M.move_dividing_win() then
