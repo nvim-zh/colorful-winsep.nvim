@@ -87,7 +87,7 @@ function M.set_buf_char()
       if utils.direction_have(direction.up) then
         str[1] = symbols[3]
       end
-      if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 then
+      if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
         str[len] = symbols[5]
       end
       api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
@@ -100,7 +100,7 @@ function M.set_buf_char()
       if utils.direction_have(direction.up) then
         str[1] = symbols[4]
       end
-      if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 then
+      if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
         str[len] = symbols[6]
       end
       api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
