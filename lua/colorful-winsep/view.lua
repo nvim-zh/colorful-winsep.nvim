@@ -51,12 +51,14 @@ end
 --- close show line for floating win
 function M.close_dividing()
   for key, _ in pairs(M.wins) do
-    if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) then
+    if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) and fn.win_gettype(0) ~= 'command' then
       api.nvim_win_close(M.wins[key], true)
       M.wins[key] = nil
     end
   end
-  M.wins = {}
+  if fn.win_gettype(0) ~= 'command' then
+    M.wins = {}
+  end
   for key, _ in pairs(M.bufs) do
     if M.bufs[key] ~= nil and api.nvim_buf_is_valid(M.bufs[key]) then
       api.nvim_buf_delete(M.bufs[key], { force = true })
