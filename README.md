@@ -1,11 +1,11 @@
 # colorful-winsep.nvim
 
 https://user-images.githubusercontent.com/57088952/199041710-7f234dc8-2ab0-4cb1-81dc-ae65d2dc16e9.mp4
-> Can configurable dividing line
+> configurable window separtor
 
 ## Motivation
 
-Currently in neovim, we can not make the active window distinguishable via the window separator.
+Currently in Neovim, we can not make the active window distinguishable via the window separator.
 This plugin will color the border of active window, like what tmux does for its different panes.
 
 ## Requirements
@@ -16,57 +16,55 @@ This plugin will color the border of active window, like what tmux does for its 
 ## Install
 ### Using a plugin manager
 
-Using plug:
+Using vim-plug:
 
 ```lua
 Plug 'nvim-zh/colorful-winsep.nvim'
 ```
 
-Using Packer:
+Using Packer.nvim:
+
 ```lua
 return require("packer").startup( function(use)
- 	use "nvim-zh/colorful-winsep.nvim"
- end
+  use "nvim-zh/colorful-winsep.nvim",
+  config = [[reqire('colorful-winsep.nvim').setup()]]
+end
 )
-``` 
+```
 
----
 ## Default configuration
 
 ```lua
-{
-  -- Window divider color definition
+require("colorful-winsep").setup({
+  -- highlight for Window separator
   highlight = {
     guibg = "#16161E",
-    guifg = "#1F3442"
+    guifg = "#1F3442",
   },
   -- timer refresh rate
   interval = 30,
-  -- filetype in the list, will not be executed
+  -- This plugin will not be activated for filetype in the following table.
   no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
-  -- Split line symbol definition
+  -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
   close_event = function()
-    -- Executed after closing the window divider
+    -- Executed after closing the window separator
   end,
   create_event = function()
-    -- Executed after creating the window divider
-  end
-}
+    -- Executed after creating the window separator
+  end,
+})
 ```
 
-### `api`
+### API function
 
-- `NvimSeparatorDel` close cursor win winsep  
-- `NvimSeparatorShow` cursor win show winsep (Cannot be used on already created windows)
+- `NvimSeparatorDel`: close active window separtors.
+- `NvimSeparatorShow`: show active window separtors (cannot be used on already activated windows)
 
-## Setup
+## FAQ
 
-```lua
-require('colorful-winsep').setup({})
-```
+###  How to disable this plugin for nvim-tree [#8](https://github.com/nvim-zh/colorful-winsep.nvim/issues/8)
 
-##  Hide border for nvim-tree [#8](https://github.com/nvim-zh/colorful-winsep.nvim/issues/8)
 ```lua
 create_event = function()
   if fn.winnr('$') == 3 then
@@ -79,9 +77,11 @@ create_event = function()
 end
 ```
 
-# Todolist
+# TODO list
+
 - [x] Refactor more delicate logic for creating floating windows
 - [x] ~~will provide enable and disable api~~ `create_event` and `close_event`
 
 ## License
+
 This plugin is released under the MIT License.
