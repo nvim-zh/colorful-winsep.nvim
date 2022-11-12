@@ -3,6 +3,16 @@
 https://user-images.githubusercontent.com/57088952/199041710-7f234dc8-2ab0-4cb1-81dc-ae65d2dc16e9.mp4
 > Can configurable dividing line
 
+## Motivation
+
+Currently in neovim, we can not make the active window distinguishable via the window separator.
+This plugin will color the border of active window, like what tmux does for its different panes.
+
+## Requirements
+
++ Neovim 0.8.0+
++ [Nerd Fonts](https://www.nerdfonts.com/)
+
 ## Install
 ### Using a plugin manager
 
