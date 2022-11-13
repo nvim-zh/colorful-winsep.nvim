@@ -25,11 +25,12 @@ Plug 'nvim-zh/colorful-winsep.nvim'
 Using Packer.nvim:
 
 ```lua
-return require("packer").startup( function(use)
-  use "nvim-zh/colorful-winsep.nvim",
-  config = [[reqire('colorful-winsep.nvim').setup()]]
-end
-)
+use {
+    "nvim-zh/colorful-winsep.nvim",
+    config = function ()
+        require('colorful-winsep').setup()
+    end
+}
 ```
 
 ## Default configuration
