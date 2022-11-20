@@ -67,15 +67,16 @@ require("colorful-winsep").setup({
 ###  How to disable this plugin for nvim-tree [#8](https://github.com/nvim-zh/colorful-winsep.nvim/issues/8)
 
 ```lua
-create_event = function()
-  if fn.winnr('$') == 3 then
-    local win_id = fn.win_getid(vim.fn.winnr('h'))
-    local filetype = api.nvim_buf_get_option(api.nvim_win_get_buf(win_id), 'filetype')
-    if filetype == "NvimTree" then
-      colorful_winsep.NvimSeparatorDel()
+  create_event = function()
+    local win_n = require("colorful-winsep.utils").getWinNumber()
+    if win_n == 2 then
+      local win_id = vim.fn.win_getid(vim.fn.winnr('h'))
+      local filetype = api.nvim_buf_get_option(vim.api.nvim_win_get_buf(win_id), 'filetype')
+      if filetype == "NvimTree" then
+        colorful_winsep.NvimSeparatorDel()
+      end
     end
   end
-end
 ```
 
 # TODO list

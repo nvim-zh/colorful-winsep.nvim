@@ -59,7 +59,7 @@ end
 ---@return: boolean
 function M.direction_have(direction)
   local winnum = vim.fn.winnr()
-  if vim.fn.winnr(direction) ~= winnum then
+  if vim.fn.winnr(direction) ~= winnum and fn.win_gettype(winnum) ~= 'popup' then
     return true
   end
   return false
@@ -137,6 +137,16 @@ function M.set_user_config(opts)
   if type(opts) == 'table' and opts ~= {} then
     M.defaultopts = vim.tbl_deep_extend("force", M.defaultopts, opts)
   end
+end
+
+function M.getWinNumber()
+  local win_len = fn.winnr('$')
+  for i = 1, win_len do
+    if fn.win_gettype(i) == 'popup' then
+      win_len = win_len - 1
+    end
+  end
+  return win_len
 end
 
 return M
