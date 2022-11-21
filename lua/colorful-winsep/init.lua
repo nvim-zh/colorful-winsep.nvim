@@ -29,25 +29,28 @@ end
 
 function M.setup(opts)
   view.set_config(opts)
-  view.highlight()
   M.auto_group = api.nvim_create_augroup("NvimSeparator", { clear = true })
   if view.config.enable then
-    api.nvim_create_autocmd({ "WinEnter", "WinScrolled", "VimResized", "WinClosed" }, {
-      group = M.auto_group,
-      callback = function(opts)
-        if M.lock then
-          return
-        end
-        if opts.event == "WinClosed" then
-          local winnr = fn.bufwinid(opts.buf)
-          if fn.win_gettype(winnr) == 'popup' then
+    api.nvim_create_autocmd({ "WinEnter", "WinScrolled", "VimResized", "WinClosed", "ColorScheme", "ColorSchemePre" },
+      {
+        group = M.auto_group,
+        callback = function(opts)
+          if M.lock then
             return
           end
-          M.NvimSeparatorDel()
+          if opts.event == "WinClosed" then
+            local winnr = fn.bufwinid(opts.buf)
+            if fn.win_gettype(winnr) == 'popup' then
+              return
+            end
+            M.NvimSeparatorDel()
+          end
+          if opts.event == 'ColorScheme' then
+            view.highlight()
+          end
+          M.NvimSeparatorShow()
         end
-        M.NvimSeparatorShow()
-      end
-    })
+      })
   end
   api.nvim_create_autocmd({ "WinLeave", "BufModifiedSet" }, {
     group = M.auto_group,
