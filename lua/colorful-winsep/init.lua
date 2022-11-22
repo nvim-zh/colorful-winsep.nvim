@@ -45,7 +45,7 @@ function M.setup(opts)
             end
             M.NvimSeparatorDel()
           end
-          if opts.event == 'ColorScheme' then
+          if opts.event == 'ColorScheme' or opts.event == 'WinEnter' then
             view.highlight()
           end
           M.NvimSeparatorShow()
