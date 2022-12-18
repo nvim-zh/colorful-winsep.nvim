@@ -112,7 +112,7 @@ end
 
 function M.highlight()
   local opts = M.config.highlight
-  vim.api.nvim_set_hl(0, 'NvimSeparator', { fg = opts.guifg, bg = opts.guibg })
+  vim.api.nvim_set_hl(0, 'NvimSeparator', opts)
 end
 
 function M.set_config(opts)

@@ -5,7 +5,7 @@ local M = {
   defaultopts = {
     symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
     no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-    highlight = { guifg = "#957CC6", guibg = api.nvim_get_hl_by_name("Normal", true)["background"] },
+    highlight = { fg = "#957CC6", bg = api.nvim_get_hl_by_name("Normal", true)["background"] },
     interval = 100,
     enable = true,
     create_event = function()
