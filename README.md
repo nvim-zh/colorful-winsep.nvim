@@ -39,8 +39,8 @@ use {
 require("colorful-winsep").setup({
   -- highlight for Window separator
   highlight = {
-    guibg = "#16161E",
-    guifg = "#1F3442",
+    bg = "#16161E",
+    fg = "#1F3442",
   },
   -- timer refresh rate
   interval = 30,
