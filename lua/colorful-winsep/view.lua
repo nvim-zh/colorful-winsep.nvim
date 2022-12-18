@@ -1,6 +1,7 @@
 local api = vim.api
 local fn = vim.fn
 local utils = require('colorful-winsep.utils')
+local comments = require("colorful-winsep.comments")
 local M = {
   wins = {},
   bufs = {},
@@ -116,6 +117,7 @@ function M.highlight()
 end
 
 function M.set_config(opts)
+  comments.check(opts)
   utils.set_user_config(opts)
   M.config = utils.defaultopts
 end
