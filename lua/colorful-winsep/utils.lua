@@ -1,6 +1,7 @@
 local fn = vim.fn
 local bo = vim.bo
 local api = vim.api
+local comments = require("colorful-winsep.comments")
 local M = {
   defaultopts = {
     symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
@@ -135,6 +136,7 @@ end
 ---@param opts : table
 function M.set_user_config(opts)
   if type(opts) == 'table' and opts ~= {} then
+    comments.check(opts)
     M.defaultopts = vim.tbl_deep_extend("force", M.defaultopts, opts)
   end
 end
