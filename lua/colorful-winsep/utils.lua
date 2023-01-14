@@ -141,7 +141,9 @@ function M.set_user_config(opts)
   end
 end
 
-function M.getWinNumber()
+--- Calculation window number,Rule out floating window to get the real number
+---@return
+function M.calculate_number_windows()
   local win_len = fn.winnr('$')
   for i = 1, win_len do
     if fn.win_gettype(i) == 'popup' then
@@ -149,6 +151,11 @@ function M.getWinNumber()
     end
   end
   return win_len
+end
+
+function M.getWinNumber()
+  comments.Rename_getWinNumber()
+  return M.calculate_number_windows()
 end
 
 return M

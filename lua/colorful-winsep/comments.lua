@@ -1,7 +1,7 @@
 local M = {}
 local NotifyTitle = "colorful-winsep.nvim"
 function Notify(body_text)
-  vim.notify(body_text, vim.log.levels.WARN, {
+  vim.notify_once(body_text, vim.log.levels.WARN, {
     title = NotifyTitle
   })
 end
@@ -44,6 +44,13 @@ function Compatiblehighlight(opts)
       opts.highlight = utils.defaultopts.highlight
     end
   end
+end
+
+function M.Rename_getWinNumber()
+  Notify({
+    "Rename the API `require(\"colorful-winsep.utils\").getWinNumber()`",
+    "use `require(\"colorful-winsep.utils\").calculate_number_windows()`"
+  })
 end
 
 return M
