@@ -33,6 +33,13 @@ function M.create_dividing_win()
   return false
 end
 
+function M.buf_is_valid(buf_id)
+  if buf_id == nil then
+    return false
+  end
+  return true
+end
+
 --- move show line for floating win
 ---@return
 function M.move_dividing_win()
@@ -79,7 +86,9 @@ function M.set_buf_char()
       for i = 1, len do
         str[1] = str[1] .. symbols[1]
       end
-      api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
+      if M.buf_is_valid(M.bufs[key]) then
+        api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
+      end
     elseif key == direction.left then
       local len = fn.winheight(M.wins[key])
       local str = {}
@@ -92,7 +101,9 @@ function M.set_buf_char()
       if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
         str[len] = symbols[5]
       end
-      api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
+      if M.buf_is_valid(M.bufs[key]) then
+        api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
+      end
     elseif key == direction.right then
       local len = fn.winheight(M.wins[key])
       local str = {}
@@ -105,7 +116,9 @@ function M.set_buf_char()
       if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
         str[len] = symbols[6]
       end
-      api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
+      if M.buf_is_valid(M.bufs[key]) then
+        api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
+      end
     end
   end
 end
