@@ -33,6 +33,18 @@ use {
 }
 ```
 
+Using lazy.nvim
+
+```lua
+	{
+		"nvim-zh/colorful-winsep.nvim",
+		config = function()
+			asynrequire("packers.nvimsep")
+		end,
+		event = { "WinNew" },
+	}
+```
+
 ## Default configuration
 
 ```lua
