@@ -39,7 +39,7 @@ Using lazy.nvim
 	{
 		"nvim-zh/colorful-winsep.nvim",
 		config = function()
-			asynrequire("packers.nvimsep")
+			require("packers.nvimsep")
 		end,
 		event = { "WinNew" },
 	}
