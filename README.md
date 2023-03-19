@@ -36,13 +36,11 @@ use {
 Using lazy.nvim
 
 ```lua
-	{
-		"nvim-zh/colorful-winsep.nvim",
-		config = function()
-			require("packers.nvimsep")
-		end,
-		event = { "WinNew" },
-	}
+{
+  "nvim-zh/colorful-winsep.nvim",
+  config = true,
+  event = { "WinNew" },
+}
 ```
 
 ## Default configuration
