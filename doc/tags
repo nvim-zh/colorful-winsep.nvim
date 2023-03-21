@@ -1,0 +1,12 @@
+close_event	winsep.txt	/*close_event*
+colorful-winsep	winsep.txt	/*colorful-winsep*
+winsep-api	winsep.txt	/*winsep-api*
+winsep.NvimSeparatorDel	winsep.txt	/*winsep.NvimSeparatorDel*
+winsep.NvimSeparatorShow	winsep.txt	/*winsep.NvimSeparatorShow*
+winsep.configuration	winsep.txt	/*winsep.configuration*
+winsep.create_event	winsep.txt	/*winsep.create_event*
+winsep.highlight	winsep.txt	/*winsep.highlight*
+winsep.interval	winsep.txt	/*winsep.interval*
+winsep.no_exec_files	winsep.txt	/*winsep.no_exec_files*
+winsep.symbols	winsep.txt	/*winsep.symbols*
+winsep.utils	winsep.txt	/*winsep.utils*
