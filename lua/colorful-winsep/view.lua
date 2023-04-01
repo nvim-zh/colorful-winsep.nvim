@@ -21,6 +21,7 @@ function M.create_dividing_win()
         local buf = api.nvim_create_buf(false, false)
         M.bufs[value] = buf
         api.nvim_buf_set_option(buf, "buftype", "nofile")
+        api.nvim_buf_set_option(buf, "filetype", "NvimSeparator")
         local win = api.nvim_open_win(buf, false, opts)
         M.wins[value] = win
         api.nvim_win_set_option(win, 'winhl', 'Normal:NvimSeparator')
