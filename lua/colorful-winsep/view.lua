@@ -126,7 +126,9 @@ end
 
 function M.highlight()
   local opts = M.config.highlight
-  vim.api.nvim_set_hl(0, 'NvimSeparator', opts)
+  if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "NvimSeparator" })) then
+    vim.api.nvim_set_hl(0, "NvimSeparator", opts)
+  end
 end
 
 function M.set_config(opts)
