@@ -158,4 +158,13 @@ function M.getWinNumber()
   return M.calculate_number_windows()
 end
 
+--- Determine if given version is above or equal current nvim version.
+---@param major number
+---@param minor number
+---@param patch number
+---@return boolean
+function M.check_version(major, minor, patch)
+  return major >= vim.version()["major"] and minor >= vim.version()["minor"] and patch >= vim.version()["patch"]
+end
+
 return M
