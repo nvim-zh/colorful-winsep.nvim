@@ -126,9 +126,20 @@ end
 
 function M.highlight()
   local opts = M.config.highlight
-  if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "NvimSeparator" })) then
-    vim.api.nvim_set_hl(0, "NvimSeparator", opts)
+
+  if utils.check_version(0, 9, 0) then
+    -- `nvim_get_hl` is added in 0.9.0
+    if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "NvimSeparator" })) then
+      vim.api.nvim_set_hl(0, "NvimSeparator", opts)
+    end
+  else
+    -- if name is not existed, `nvim_get_hl_by_name` return an error
+    local ok, _ = pcall(vim.api.nvim_get_hl_by_name, "NvimSeparator", false)
+    if not ok then
+      vim.api.nvim_set_hl(0, "NvimSeparator", opts)
+    end
   end
+
 end
 
 function M.set_config(opts)
