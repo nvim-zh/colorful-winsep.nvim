@@ -10,7 +10,7 @@ This plugin will color the border of active window, like what tmux does for its 
 
 ## Requirements
 
-+ Neovim 0.8.0+
++ Neovim 0.8.3+
 + [Nerd Fonts](https://www.nerdfonts.com/)
 
 ## Install
