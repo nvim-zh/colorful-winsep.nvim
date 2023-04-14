@@ -97,3 +97,6 @@ require("colorful-winsep").setup({
 ## License
 
 This plugin is released under the MIT License.
+
+## visitors
+<img src="https://steins-gate-visitor-count.greenhandatsjtu.repl.co/denstiny_colorful_winsep" width=100px>
