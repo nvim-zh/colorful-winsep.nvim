@@ -43,6 +43,7 @@ setup({config})					*colorful-winsep.setup()*
 		Executed after creating the window separator.
 		Example: this function automatically disable the plugin when
 		only two windows exist.
+
 >lua
 	function()
 	  local win_n = require("colorful-winsep.utils").calculate_number_windows()
@@ -96,7 +97,7 @@ Example:
 	if b then
 	  vim.print "left have win"
 	else
-	  vim.print "right not have win"
+	  vim.print "left not have win"
 	end
 <
 
