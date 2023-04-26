@@ -1,0 +1,104 @@
+*colorful-winsep.txt*			Make your nvim window separators colorful
+
+License: MIT License
+URL: https://github.com/nvim-zh/colorful-winsep.nvim
+
+==============================================================================
+INTRODUCTION					*colorful-winsep-intro*
+
+Currently in Neovim, we can not make the active window distinguishable via the
+window separator. This plugin will color the border of active window, like
+what tmux does for its different panes.
+
+==============================================================================
+INTERFACE					*colorful-winsep-interface*
+
+setup({config})					*colorful-winsep.setup()*
+	Configure the plugin with the given table. {config} accepts the
+	following keys:
+
+	• highlight: `table`
+		This accepts a table same as |nvim_set_hl()|, see it.
+		Default: >lua
+			{
+			  fg = "#957CC6",
+			  bg = (background color of |hl-Normal|)
+			}
+<
+	• interval: `integer`
+		Timer refresh rate.
+		Default: `100`
+	• no_exec_files: table
+		List of filetype deactivating the plugin.
+		Default: >lua
+			{ "packer", "TelescopePrompt", "mason", "CompetiTest" }
+<
+	• symbols: `table`
+		Symbols for separator lines, the order: horizontal, vertical,
+		top left, top right, bottom left, bottom right.
+		Default: >lua
+			{ "━", "┃", "┏", "┓", "┗", "┛" }
+<
+	• create_event: `function`
+		Executed after creating the window separator.
+		Example: this function automatically disable the plugin when
+		only two windows exist.
+>lua
+	function()
+	  local win_n = require("colorful-winsep.utils").calculate_number_windows()
+	  if win_n == 2 then
+	    require("colorful-winsep").NvimSeparatorDel()
+	  end
+	end
+<
+	• close_event: `function`
+		Executed after closing the window separator callback.
+
+Example:
+>lua
+	require("colorful-winsep").setup({
+	  highlight = {
+	    bg = "#16161E",
+	    fg = "#1F3442",
+	  },
+	  interval = 30,
+	  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
+	  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+	  close_event = function() end,
+	  create_event = function() end,
+	})
+<
+
+NvimSeparatorDel()				*colorful-winsep.NvimSeparatorDel()*
+	Close current winsep.
+
+NvimSeparatorShow()				*colorful-winsep.NvimSeparatorShow()*
+	Show current winsep (If the current window without creating winsep).
+
+				*colorful-winsep.utils.calculate_number_windows()* 
+utils.calculate_number_windows() 
+	Return statistics of the current window number.
+	It will filter out floating window to get the real number.
+
+						*colorful-winsep.utils.can_create()* 
+utils.can_create({no_exec_files})
+	Check whether the current window can create winsep.
+
+						*colorful-winsep.utils.direction_have()* 
+utils.direction_have({direction})
+	Check the {direction} if there is a window.
+	{direction} must be one of the "h", "l", "k", "j".
+
+Example:
+>lua
+	local direction = { left = "h", right = "l", up = "k", down = "j" }
+	local b = require("colorful-winsep.utils").direction_have(direction.left)
+	if b then
+	  vim.print "left have win"
+	else
+	  vim.print "right not have win"
+	end
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:
