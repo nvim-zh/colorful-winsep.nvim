@@ -120,7 +120,16 @@ function M.create_direction_win_option(direction)
 		else
 			opts.col = cursor_win_pos[2] + cursor_win_width
 		end
+
+		--- Used to distinguish only two window, do special processing line
+		if M.calculate_number_windows() == 2 then
+			opts.height = math.ceil(opts.height / 2)
+			if not M.direction_have(M.direction.left) and M.direction_have(M.direction.right) then
+				opts.row = opts.row + opts.height + 1
+			end
+		end
 	end
+
 	-- horizontal line
 	if direction == M.direction.up or (direction == M.direction.down and vim.o.laststatus == 3) then
 		opts.width = cursor_win_width
@@ -131,6 +140,14 @@ function M.create_direction_win_option(direction)
 			opts.row = cursor_win_pos[1] + cursor_win_height
 		end
 		opts.col = cursor_win_pos[2]
+
+		--- Used to distinguish only two window, do special processing line
+		if M.calculate_number_windows() == 2 then
+			opts.width = math.ceil(opts.width / 2)
+			if not M.direction_have(M.direction.up) and M.direction_have(M.direction.down) then
+				opts.col = opts.col + opts.width
+			end
+		end
 	end
 	if opts.height == 0 and opts.width == 0 and opts.row == 0 and opts.col == 0 then
 		return nil
