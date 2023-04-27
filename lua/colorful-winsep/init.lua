@@ -10,16 +10,18 @@ local fn = vim.fn
 local M = { lock = false }
 
 function M.NvimSeparatorShow()
-	M.lock = true
-	if view.create_dividing_win() then
-		view.set_buf_char()
-	else
-		if view.move_dividing_win() then
+	vim.defer_fn(function()
+		M.lock = true
+		if view.create_dividing_win() then
 			view.set_buf_char()
+		else
+			if view.move_dividing_win() then
+				view.set_buf_char()
+			end
 		end
-	end
-	M.lock = false
-	view.config.create_event()
+		M.lock = false
+		view.config.create_event()
+	end, require("colorful-winsep.utils").defaultopts.interval)
 end
 
 function M.NvimSeparatorDel()
