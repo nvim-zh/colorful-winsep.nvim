@@ -124,7 +124,7 @@ function M.create_direction_win_option(direction)
 		--- Used to distinguish only two window, do special processing line
 		if M.calculate_number_windows() == 2 then
 			opts.height = math.ceil(opts.height / 2)
-			if not M.direction_have(M.direction.left) and M.direction_have(M.direction.right) then
+			if M.direction_have(M.direction.left) and not M.direction_have(M.direction.right) then
 				opts.row = opts.row + opts.height + 1
 			end
 		end
@@ -144,7 +144,7 @@ function M.create_direction_win_option(direction)
 		--- Used to distinguish only two window, do special processing line
 		if M.calculate_number_windows() == 2 then
 			opts.width = math.ceil(opts.width / 2)
-			if not M.direction_have(M.direction.up) and M.direction_have(M.direction.down) then
+			if M.direction_have(M.direction.up) and not M.direction_have(M.direction.down) then
 				opts.col = opts.col + opts.width
 			end
 		end
