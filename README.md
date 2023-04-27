@@ -1,6 +1,6 @@
 # colorful-winsep.nvim
 
-https://user-images.githubusercontent.com/57088952/199041710-7f234dc8-2ab0-4cb1-81dc-ae65d2dc16e9.mp4
+https://user-images.githubusercontent.com/57088952/234891291-e0657633-eec8-40f7-b512-1da29c01ac05.mp4
 > configurable window separtor
 
 ## Motivation
@@ -97,6 +97,3 @@ require("colorful-winsep").setup({
 ## License
 
 This plugin is released under the MIT License.
-
-## visitors
-<img src="https://steins-gate-visitor-count.greenhandatsjtu.repl.co/denstiny_colorful_winsep" width=100px>
