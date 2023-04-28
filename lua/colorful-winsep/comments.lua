@@ -1,7 +1,8 @@
 local M = {}
 local NotifyTitle = "colorful-winsep.nvim"
 function Notify(body_text)
-	vim.notify_once(body_text, vim.log.levels.WARN, {
+	local msg = table.concat(body_text, "\n")
+	vim.notify_once(msg, vim.log.levels.WARN, {
 		title = NotifyTitle,
 	})
 end
