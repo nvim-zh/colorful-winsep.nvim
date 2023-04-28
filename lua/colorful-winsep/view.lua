@@ -1,176 +1,221 @@
+local Separator = require("colorful-winsep.separator")
+local config = require("colorful-winsep.config")
+local utils = require("colorful-winsep.utils")
 local api = vim.api
 local fn = vim.fn
-local utils = require("colorful-winsep.utils")
-local M = {
-	wins = {},
-	bufs = {},
-	width = fn.winwidth(0),
-	height = fn.winheight(0),
-	timers = {},
+local directions = utils.directions
+
+local BorderModel = require("colorful-winsep.model")
+
+local M = {}
+M.separators = {
+    left = Separator:new(),
+    down = Separator:new(),
+    up = Separator:new(),
+    right = Separator:new(),
 }
+M.border_model = BorderModel:new()
 
---- Create floating win show  line
----@return
-function M.create_dividing_win()
-	if utils.can_create(M.config.no_exec_files) then
-		M.close_dividing()
-		local direction = utils.direction
-		for _, value in pairs(direction) do
-			local opts = utils.create_direction_win_option(value)
-			if utils.direction_have(value) and opts ~= nil then
-				local buf = api.nvim_create_buf(false, false)
-				M.bufs[value] = buf
-				api.nvim_buf_set_option(buf, "buftype", "nofile")
-				api.nvim_buf_set_option(buf, "filetype", "NvimSeparator")
-				local win = api.nvim_open_win(buf, false, opts)
-				M.wins[value] = win
-				api.nvim_win_set_option(win, "winhl", "Normal:NvimSeparator")
-			end
-		end
-		M.width = vim.fn.winwidth(0)
-		M.height = vim.fn.winwidth(0)
-		return true
-	end
-	return false
+local function calculate_layout(dir, only_2wins)
+    local current_row, current_col = unpack(api.nvim_win_get_position(0))
+    local sep_height = fn.winheight(0)
+    local sep_width = fn.winwidth(0)
+
+    local layout = {
+        anchor_row = current_row,
+        anchor_col = current_col,
+        size = 0,
+        is_vertical = false,
+        start_symbol = "",
+        body_symbol = "",
+        end_symbol = ""
+    }
+
+    if dir == "left" then
+        layout.is_vertical = true
+        layout.anchor_col = current_col - 1
+        layout.size = sep_height
+        layout.start_symbol = config.opts.border[2]
+        layout.body_symbol = config.opts.border[2]
+        layout.end_symbol = config.opts.border[2]
+
+        if utils.has_winbar() then layout.size = layout.size + 1 end
+        if utils.has_adjacent_win(directions.up) then
+            layout.start_symbol = config.opts.border[3]
+            layout.size = layout.size + 1
+            layout.anchor_row = layout.anchor_row - 1
+        end
+        if utils.has_adjacent_win(directions.down) then
+            layout.end_symbol = config.opts.border[5]
+            layout.size = layout.size + 1
+        end
+
+        if only_2wins then
+            layout.anchor_row = layout.size - math.ceil(layout.size / 2)
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "center" or pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_left
+            end
+            if pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_left
+            end
+        end
+
+    elseif dir == "down" then
+        layout.is_vertical = false
+        layout.anchor_row = current_row + sep_height
+        layout.size = sep_width
+        layout.start_symbol = config.opts.border[1]
+        layout.body_symbol = config.opts.border[1]
+        layout.end_symbol = config.opts.border[1]
+
+        if utils.has_winbar() then layout.anchor_row = layout.anchor_row + 1 end
+        if utils.has_adjacent_win(directions.right) then
+            layout.end_symbol = config.opts.border[6]
+            layout.size = layout.size + 1
+        end
+
+        if only_2wins then
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_down
+            end
+            if pos == "center" or pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_down
+            end
+        end
+
+    elseif dir == "up" then
+        layout.is_vertical = false
+        layout.anchor_row = current_row - 1
+        layout.size = sep_width
+        layout.start_symbol = config.opts.border[1]
+        layout.body_symbol = config.opts.border[1]
+        layout.end_symbol = config.opts.border[1]
+
+        if utils.has_adjacent_win(directions.right) then
+            layout.end_symbol = config.opts.border[4]
+            layout.size = layout.size + 1
+        end
+
+        if only_2wins then
+            layout.anchor_col = layout.size - math.ceil(layout.size / 2)
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "center" or pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_up
+            end
+            if pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_up
+            end
+        end
+
+    elseif dir == "right" then
+        layout.is_vertical = true
+        layout.anchor_col = current_col + sep_width
+        layout.size = sep_height
+        layout.start_symbol = config.opts.border[2]
+        layout.body_symbol = config.opts.border[2]
+        layout.end_symbol = config.opts.border[2]
+
+        if utils.has_winbar() then layout.size = layout.size + 1 end
+
+        if only_2wins then
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_right
+            end
+            if pos == "center" or pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_right
+            end
+        end
+    end
+
+    return layout
 end
 
-function M.buf_is_valid(buf_id)
-	if buf_id == nil then
-		return false
-	end
-	return true
+--- the order of rendering a full set of separators:  left -> down -> up -> right (i.e. hjlkl)
+function M.render()
+    local only_2wins = (utils.count_windows() == 2)
+    local dir_list = { "left", "down", "up", "right" }
+    
+    local planned_layouts = {}
+    -- pre-calculate before render
+    for _, dir in ipairs(dir_list) do
+        if utils.has_adjacent_win(directions[dir]) then
+            planned_layouts[dir] = calculate_layout(dir, only_2wins)
+        end
+    end
+
+    -- build circular border model
+    M.border_model:build(planned_layouts)
+
+    -- Override layout symbols with potentially modified node chars
+    local nodes = M.border_model:get_nodes()
+    for _, node in ipairs(nodes) do
+        local layout = planned_layouts[node.win_dir]
+        if layout then
+            if node.type:find("corner") then
+                if node.buf_idx == 1 then
+                    layout.start_symbol = node.char
+                elseif node.buf_idx == layout.size then
+                    layout.end_symbol = node.char
+                end
+            else
+                layout.body_symbol = node.char
+            end
+        end
+    end
+
+    -- render using direction array 
+    for _, dir in ipairs(dir_list) do
+        local layout = planned_layouts[dir]
+        local sep = M.separators[dir]
+
+        if layout then
+            sep.start_symbol = layout.start_symbol
+            sep.body_symbol = layout.body_symbol
+            sep.end_symbol = layout.end_symbol
+            
+            if layout.is_vertical then
+                sep:vertical_init(layout.size)
+            else
+                sep:horizontal_init(layout.size)
+            end
+
+            if not sep._show then
+                sep:move(layout.anchor_row, layout.anchor_col)
+                sep:show()
+            elseif config.opts.animate.enabled == "shift" then
+                sep:shift_move(layout.anchor_row, layout.anchor_col)
+            else
+                sep:move(layout.anchor_row, layout.anchor_col)
+            end
+
+            if config.opts.animate.enabled == "progressive" then
+                if layout.is_vertical then
+                    sep:progressive_animate_vertical(dir == "right")
+                else
+                    sep:progressive_animate_horizontal(dir == "down")
+                end
+            end
+        else
+            sep:hide()
+        end
+    end
 end
 
---- move show line for floating win
----@return
-function M.move_dividing_win()
-	if M.width == fn.winwidth(0) and M.height == fn.winheight(0) then
-		return false
-	end
-	for key, _ in pairs(M.wins) do
-		local opts = utils.create_direction_win_option(key)
-		if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) then
-			api.nvim_win_set_config(M.wins[key], opts)
-		end
-	end
-	return true
-end
-
---- close show line for floating win
-function M.close_dividing()
-	for key, _ in pairs(M.wins) do
-		if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) and fn.win_gettype(0) ~= "command" then
-			api.nvim_win_close(M.wins[key], true)
-			M.wins[key] = nil
-		end
-	end
-	if fn.win_gettype(0) ~= "command" then
-		M.wins = {}
-	end
-	for key, _ in pairs(M.bufs) do
-		if M.bufs[key] ~= nil and api.nvim_buf_is_valid(M.bufs[key]) then
-			api.nvim_buf_delete(M.bufs[key], { force = true })
-			M.bufs[key] = nil
-		end
-	end
-	M.bufs = {}
-end
-
---- set line symbol
-function M.set_buf_char()
-	local direction = utils.direction
-	local symbols = M.config.symbols
-	for key, _ in pairs(M.wins) do
-		if key == direction.up or key == direction.down then
-			local len = fn.winwidth(M.wins[key])
-			local str = { "" }
-			for i = 1, len do
-				str[1] = str[1] .. symbols[1]
-			end
-			if M.buf_is_valid(M.bufs[key]) then
-				api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
-			end
-		elseif key == direction.left then
-			local len = fn.winheight(M.wins[key])
-			local str = {}
-			for i = 1, len do
-				str[i] = symbols[2]
-			end
-			if utils.direction_have(direction.up) then
-				str[1] = symbols[3]
-			end
-			if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
-				str[len] = symbols[5]
-			end
-			if M.buf_is_valid(M.bufs[key]) then
-				api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
-			end
-		elseif key == direction.right then
-			local len = fn.winheight(M.wins[key])
-			local str = {}
-			for i = 1, len do
-				str[i] = symbols[2]
-			end
-			if utils.direction_have(direction.up) then
-				str[1] = symbols[4]
-			end
-			if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
-				str[len] = symbols[6]
-			end
-			if M.buf_is_valid(M.bufs[key]) then
-				api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
-			end
-		end
-	end
-end
-
-function M.highlight()
-	local opts = M.config.highlight
-
-	if utils.check_version(0, 9, 0) then
-		-- `nvim_get_hl` is added in 0.9.0
-		if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "NvimSeparator" })) then
-			vim.api.nvim_set_hl(0, "NvimSeparator", opts)
-		end
-	else
-		-- if name is not existed, `nvim_get_hl_by_name` return an error
-		local ok, _ = pcall(vim.api.nvim_get_hl_by_name, "NvimSeparator", false)
-		if not ok then
-			vim.api.nvim_set_hl(0, "NvimSeparator", opts)
-		end
-	end
-end
-
-function M.set_config(opts)
-	utils.set_user_config(opts)
-	M.config = utils.defaultopts
-end
-
-function M.resize_auto_show_float_win()
-	if M.width ~= fn.winwidth(0) or M.height ~= fn.winheight(0) or utils.isWinMove() then
-		if M.create_dividing_win() then
-			M.set_buf_char()
-		elseif M.move_dividing_win() then
-			M.set_buf_char()
-		end
-		M.width = fn.winwidth(0)
-		M.height = fn.winheight(0)
-		M.config.create_event()
-	end
-end
-
-function M.start_timer()
-	local timer = vim.loop.new_timer()
-	timer:start(0, M.config.interval, vim.schedule_wrap(M.resize_auto_show_float_win))
-	table.insert(M.timers, timer)
-end
-
-function M.stop_timer()
-	for i = 1, #M.timers do
-		M.timers[i]:stop()
-		M.timers[i] = nil
-	end
-	M.timers = {}
+function M.hide_all()
+    for _, sep in pairs(M.separators) do
+        sep:hide()
+    end
 end
 
 return M

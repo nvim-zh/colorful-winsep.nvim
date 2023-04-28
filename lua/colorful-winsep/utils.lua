@@ -1,193 +1,75 @@
 local fn = vim.fn
-local bo = vim.bo
-local api = vim.api
-local comments = require("colorful-winsep.comments")
-local M = {
-	defaultopts = {
-		symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-		no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
-		highlight = { fg = "#957CC6", bg = api.nvim_get_hl_by_name("Normal", true)["background"] },
-		interval = 100,
-		enable = true,
-		create_event = function() end,
-		close_event = function() end,
-	},
-	direction = { left = "h", right = "l", up = "k", down = "j" },
-	c_win = -1,
-	pos = api.nvim_win_get_position(0),
-}
+local M = {}
 
---- Judge whether the current can be started and colorful line
----@param no_exec_files
----@return: boolean
-function M.can_create(no_exec_files)
-	if vim.fn.win_gettype(0) == "popup" then -- Skip the floating window
-		M.c_win = api.nvim_get_current_win()
-		return false
-	end
-	local win = api.nvim_get_current_win()
-	if M.c_win == win then
-		return false
-	end
-	local cursor_win_filetype = bo.filetype
-	for i = 1, #no_exec_files do
-		if no_exec_files[i] == cursor_win_filetype then
-			M.c_win = api.nvim_get_current_win()
-			return false
-		end
-	end
-	M.c_win = win
-	return true
-end
+local ns_id = vim.api.nvim_create_namespace("colorful-winsep")
 
---- is old create
-function M.isWinMove()
-	--local win = api.nvim_get_current_win()
-	local pos = api.nvim_win_get_position(0)
-	if M.pos[1] ~= pos[1] or M.pos[2] ~= pos[2] then
-		M.pos = pos
-		M.c_win = -1
-		return true
-	else
-		return false
-	end
-end
+M.directions = { left = "h", down = "j", up = "k", right = "l" }
 
---- Determine if there are neighbors in the direction
----@param direction
----@return: boolean
-function M.direction_have(direction)
-	local winnum = vim.fn.winnr()
-	if vim.fn.winnr(direction) ~= winnum and fn.win_gettype(winnum) ~= "popup" then
-		return true
-	end
-	return false
-end
-
---- Get the win property of the orientation
----@param direction : { left = 'h', right = 'l', up = 'k', down = 'j' }
----@return:opts
-function M.create_direction_win_option(direction)
-	local opts = {
-		style = "minimal",
-		relative = "editor",
-		zindex = 10,
-		focusable = false,
-		height = 0,
-		width = 0,
-		row = 0,
-		col = 0,
-	}
-	local cursor_win_pos = api.nvim_win_get_position(0)
-	local cursor_win_width = fn.winwidth(0)
-	local cursor_win_height = fn.winheight(0)
-	if fn.has("nvim-0.8") then
-		if vim.o.winbar ~= "" then
-			cursor_win_height = cursor_win_height + 1
-		end
-	end
-	-- vertical line
-	if direction == M.direction.left or direction == M.direction.right then
-		opts.width = 1
-		if M.direction_have(M.direction.up) and (M.direction_have(M.direction.down) or vim.o.laststatus ~= 3) then
-			if vim.o.laststatus == 0 then
-				opts.height = cursor_win_height + 1
-			else
-				opts.height = cursor_win_height + 2
-			end
-		elseif not M.direction_have(M.direction.up) and not M.direction_have(M.direction.down) then
-			if vim.o.laststatus ~= 3 then
-				opts.height = cursor_win_height + 1
-			else
-				opts.height = cursor_win_height
-			end
-		else
-			opts.height = cursor_win_height + 1
-		end
-		if not M.direction_have(M.direction.up) and vim.o.showtabline == 2 then
-			opts.row = cursor_win_pos[1]
-		elseif not M.direction_have(M.direction.up) and vim.o.showtabline == 1 then
-			if fn.tabpagenr("$") > 1 then
-				opts.row = cursor_win_pos[1]
-			else
-				opts.row = cursor_win_pos[1] - 1
-			end
-		else
-			opts.row = cursor_win_pos[1] - 1
-		end
-		if direction == M.direction.left then
-			opts.col = cursor_win_pos[2] - 1
-		else
-			opts.col = cursor_win_pos[2] + cursor_win_width
-		end
-
-		--- Used to distinguish only two window, do special processing line
-		if M.calculate_number_windows() == 2 then
-			opts.height = math.ceil(opts.height / 2)
-			if M.direction_have(M.direction.left) and not M.direction_have(M.direction.right) then
-				opts.row = opts.row + opts.height + 1
-			end
-		end
-	end
-
-	-- horizontal line
-	if direction == M.direction.up or (direction == M.direction.down and vim.o.laststatus == 3) then
-		opts.width = cursor_win_width
-		opts.height = 1
-		if direction == M.direction.up then
-			opts.row = cursor_win_pos[1] - 1
-		else
-			opts.row = cursor_win_pos[1] + cursor_win_height
-		end
-		opts.col = cursor_win_pos[2]
-
-		--- Used to distinguish only two window, do special processing line
-		if M.calculate_number_windows() == 2 then
-			opts.width = math.ceil(opts.width / 2)
-			if M.direction_have(M.direction.up) and not M.direction_have(M.direction.down) then
-				opts.col = opts.col + opts.width
-			end
-		end
-	end
-	if opts.height == 0 and opts.width == 0 and opts.row == 0 and opts.col == 0 then
-		return nil
-	end
-	return opts
-end
-
---- Override user configuration
----@param opts : table
-function M.set_user_config(opts)
-	if type(opts) == "table" and opts ~= {} then
-		comments.check(opts)
-		M.defaultopts = vim.tbl_deep_extend("force", M.defaultopts, opts)
-	end
-end
-
---- Calculation window number,Rule out floating window to get the real number
----@return
-function M.calculate_number_windows()
-	local win_len = fn.winnr("$")
-	for i = 1, win_len do
-		if fn.win_gettype(i) == "popup" then
-			win_len = win_len - 1
-		end
-	end
-	return win_len
-end
-
-function M.getWinNumber()
-	comments.Rename_getWinNumber()
-	return M.calculate_number_windows()
-end
-
---- Determine if given version is above or equal current nvim version.
----@param major number
----@param minor number
----@param patch number
+--- check if there is adjacent window in specified direction
+---@param direction "h"|"l"|"k"|"j"
 ---@return boolean
-function M.check_version(major, minor, patch)
-	return major >= vim.version()["major"] and minor >= vim.version()["minor"] and patch >= vim.version()["patch"]
+function M.has_adjacent_win(direction)
+    local winnum = vim.fn.winnr()
+    if fn.winnr(direction) ~= winnum and fn.win_gettype(winnum) ~= "popup" then
+        return true
+    end
+    return false
 end
+
+--- check if user enable the nvim winbar feature
+---@return boolean
+function M.has_winbar()
+    return vim.o.winbar ~= ""
+end
+
+--- count the number of all windws except floating windows
+---@return integer
+function M.count_windows()
+    local win_len = fn.winnr("$")
+    for i = 1, win_len do
+        if fn.win_gettype(i) == "popup" then
+            win_len = win_len - 1
+        end
+    end
+    return win_len
+end
+
+--- color the character (1-indexed)
+---@param buf integer
+---@param start_row integer
+---@param start_col integer
+---@param end_row integer
+---@param end_col integer
+function M.color(buf, start_row, start_col, end_row, end_col)
+    vim.api.nvim_buf_set_extmark(buf, ns_id, start_row - 1, start_col - 1, {
+        end_row = end_row - 1,
+        end_col = end_col,
+        hl_group = "ColorfulWinSep",
+        hl_eol = false, -- do not highlight beyond EOL
+    })
+end
+
+function M.clear_extmarks(buf)
+    if vim.api.nvim_buf_is_valid(buf) then
+        vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+    end
+end
+
+--- current + (target - current) * factor
+---@param current integer
+---@param target integer
+---@param factor integer
+---@return number
+function M.lerp(current, target, factor)
+    return current + (target - current) * factor
+end
+
+M.easing = {
+    linear = function(t) return t end,
+    ease_out_cubic = function(t) return 1 - math.pow(1 - t, 3) end,
+    ease_in_out_sine = function(t) return -(math.cos(math.pi * t) - 1) / 2 end,
+    ease_out_quad = function(t) return 1 - (1 - t) * (1 - t) end,
+    ease_out_expo = function(t) return t == 1 and 1 or 1 - math.pow(2, -10 * t) end,
+}
 
 return M

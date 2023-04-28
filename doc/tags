@@ -1,9 +1,0 @@
-colorful-winsep-interface	colorful-winsep.txt	/*colorful-winsep-interface*
-colorful-winsep-intro	colorful-winsep.txt	/*colorful-winsep-intro*
-colorful-winsep.NvimSeparatorDel()	colorful-winsep.txt	/*colorful-winsep.NvimSeparatorDel()*
-colorful-winsep.NvimSeparatorShow()	colorful-winsep.txt	/*colorful-winsep.NvimSeparatorShow()*
-colorful-winsep.setup()	colorful-winsep.txt	/*colorful-winsep.setup()*
-colorful-winsep.txt	colorful-winsep.txt	/*colorful-winsep.txt*
-colorful-winsep.utils.calculate_number_windows()	colorful-winsep.txt	/*colorful-winsep.utils.calculate_number_windows()*
-colorful-winsep.utils.can_create()	colorful-winsep.txt	/*colorful-winsep.utils.can_create()*
-colorful-winsep.utils.direction_have()	colorful-winsep.txt	/*colorful-winsep.utils.direction_have()*

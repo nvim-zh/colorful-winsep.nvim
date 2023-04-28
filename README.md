@@ -1,7 +1,8 @@
 # colorful-winsep.nvim
 
-https://user-images.githubusercontent.com/57088952/234891291-e0657633-eec8-40f7-b512-1da29c01ac05.mp4
-> configurable window separtor
+> configurable window separator
+
+https://github.com/user-attachments/assets/6ea56aa3-b5fc-485b-bd62-2cfd162a7f78
 
 ## Motivation
 
@@ -10,7 +11,7 @@ This plugin will color the border of active window, like what tmux does for its 
 
 ## Requirements
 
-+ Neovim 0.8.3+
++ Neovim 0.11.3+
 + [Nerd Fonts](https://www.nerdfonts.com/)
 
 ## Install
@@ -39,61 +40,222 @@ Using lazy.nvim
 {
   "nvim-zh/colorful-winsep.nvim",
   config = true,
-  event = { "WinNew" },
+  event = { "WinLeave" },
 }
 ```
 
-## Default configuration
+## Configuration
 
+The following is the default configuration (read the comments carefully if you want to change it):
 ```lua
 require("colorful-winsep").setup({
-  -- highlight for Window separator
-  highlight = {
-    bg = "#16161E",
-    fg = "#1F3442",
-  },
-  -- timer refresh rate
-  interval = 30,
-  -- This plugin will not be activated for filetype in the following table.
-  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
-  -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
-  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-  close_event = function()
-    -- Executed after closing the window separator
-  end,
-  create_event = function()
-    -- Executed after creating the window separator
-  end,
+    -- choose between "single", "rounded", "bold" and "double".
+    border = "bold",
+    excluded_ft = { "packer", "TelescopePrompt", "mason" },
+    highlight = nil, -- nil|string|function. See the docs's Highlights section
+    animate = {
+        ---@type "shift"|"progressive"|false
+        enabled = "shift", -- false to disable or choose a option below (e.g. "shift") and set option for it if needed
+        shift = {
+            delay = 16, -- about 60fps
+            frames = 15, -- how many frames are required to complete the animation
+            easing = "ease_out_cubic", -- available algorithms: linear, ease_out_cubic, ease_in_out_sine, ease_out_quad, ease_out_expo
+        },
+        progressive = {
+            delay = 16,
+            vertical_lerp_factor = 0.15, -- between 0 and 1
+            horizontal_lerp_factor = 0.15, -- between 0 and 1
+        },
+    },
+    indicator_for_2wins = {
+        -- only work when the total of windows is two
+        position = "center", -- false to disable or choose between "center", "start", "end" and "both"
+        symbols = {
+            -- the meaning of left, down ,up, right is the position of separator
+            start_left = "󱞬",
+            end_left = "󱞪",
+            start_down = "󱞾",
+            end_down = "󱟀",
+            start_up = "󱞢",
+            end_up = "󱞤",
+            start_right = "󱞨",
+            end_right = "󱞦",
+        },
+    },
+    colors = {}, -- Add a custom color array. Single color applies statically, multiple colors will create a marquee effect.
 })
 ```
 
-### API function
+### animate
+By default, we use the `shift` animation. If you want to disable it, set the `animate.enabled` to false.
 
-- `NvimSeparatorDel`: close active window separtors.
-- `NvimSeparatorShow`: show active window separtors (cannot be used on already activated windows)
+#### shift
+Have a look at the top of this README
 
-## FAQ
+#### progressive
 
-###  How to disable this plugin for nvim-tree [#8](https://github.com/nvim-zh/colorful-winsep.nvim/issues/8)
+https://github.com/user-attachments/assets/4cc29832-ed46-44ec-80db-0f1da350deeb
+
+### indicator_for_2wins
+When using the plugin with two windows only, it becomes difficult to discern which window is currently active. With this feature we can identify the active window more easily. To disable it, set the `indicator_for_2wins.position` to false. Here come the showcases of default `center` option:
+
+<img width="1082" height="765" alt="Image" src="https://github.com/user-attachments/assets/f4779ad8-259a-4367-b922-3db154c6ad8e" />
+
+<img width="1082" height="765" alt="Image" src="https://github.com/user-attachments/assets/f1614390-cf6f-4c9a-9a2e-6c9fd2231a80" />
+
+
+## Commands
+The user command of the plugin is `Winsep`, and here comes the subcommands of it:
+| subcommand | lua call                             | function           |
+| ---------- | -------------                        | :-------------:    |
+| enable     | require("colorful-winsep").enable()  | enable the plugin  |
+| disable    | require("colorful-winsep").disable() | disable the plugin |
+| toggle     | require("colorful-winsep").toggle()  | toggle the plugin  |
+
+## Highlights
+The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin function or changing the plugin's configuration
+
+If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be set up the same as "Normal" highlight group's bg automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the color scheme is changed.
+
+By default, the configuration's `highlight` field is `nil`. This means the plugin will do nothing if you set the highlight group before it loads. Otherwise, the highlight is set to `#957CC6`. This is useful if you use your color scheme plugin (like catppuccin) to control highlights.
+
+## Multi-color Marquee Effect (Local Addition)
+You can create a marquee/neon light effect or override the default highlight simply by passing an array of hex colors to the `colors` option in your `setup()`, or dynamically by calling `set_colors()`. 
 
 ```lua
-  create_event = function()
-    local win_n = require("colorful-winsep.utils").calculate_number_windows()
-    if win_n == 2 then
-      local win_id = vim.fn.win_getid(vim.fn.winnr('h'))
-      local filetype = api.nvim_buf_get_option(vim.api.nvim_win_get_buf(win_id), 'filetype')
-      if filetype == "NvimTree" then
-        colorful_winsep.NvimSeparatorDel()
-      end
-    end
-  end
+-- Static custom color
+require("colorful-winsep").setup({
+    colors = { "#a6d189" }
+})
+
+-- Multi-color marquee effect
+require("colorful-winsep").setup({
+    colors = { "#a6d189", "#e5c890", "#e78284", "#ca9ee6", "#8caaee" }
+})
 ```
 
-# TODO list
+## on_frame_render (Advanced)
+We represent the border as a circular linked list model (Left -> Top -> Right -> Bottom). You can intercept each node (character point) before it is rendered to apply highly custom styling or characters by providing an `on_frame_render` function.
 
-- [x] Refactor more delicate logic for creating floating windows
-- [x] ~~will provide enable and disable api~~ `create_event` and `close_event`
+The `node` parameter contains:
+- `index`: (integer) The global 0-based index tracing the entire active border loop.
+- `type`: (string) Enumeration of the border position: `"vertical_left"`, `"top_left_corner"`, `"horizontal_top"`, `"top_right_corner"`, `"vertical_right"`, `"bottom_right_corner"`, `"horizontal_bottom"`, `"bottom_left_corner"`.
+- `char`: (string) The character intended to be rendered at this spot.
+- `win_dir`: (string) Which window direction this node belongs to: `"left"`, `"up"`, `"right"`, `"down"`.
+- `buf_idx`: (integer) Physical position of the extmark on the underlying local buffer.
+
+Example: Changing corner characters and coloring the corners separately.
+```lua
+require("colorful-winsep").setup({
+    colors = { "#a6d189", "#e5c890", "#ca9ee6" }, -- Base marquee colors
+    
+    -- Interceptor
+    on_frame_render = function(node, color_idx, offset, total_colors, total_nodes)
+        -- If it's one of the 4 corners, we replace its character and color
+        if node.type:find("corner") then
+            return "X", "ColorfulWinSep_1"
+        end
+        
+        -- Keep original character and color
+        return node.char, "ColorfulWinSep_" .. color_idx
+    end,
+})
+```
+
+Example: A playable Snake Game effect on your window border!
+```lua
+local track_color = "#4c566a"
+local snake_body = {"#5e81ac", "#81a1c1", "#88c0d0", "#8fbcbb", "#a3be8c"}
+
+-- Prepare an oversized array for the track, long enough for a 4K screen
+local snake_colors = {}
+for i = 1, 500 do table.insert(snake_colors, track_color) end
+for _, c in ipairs(snake_body) do table.insert(snake_colors, c) end
+
+local my_game_state = {
+    food_index = nil,
+    snake_length = #snake_body,
+}
+
+vim.api.nvim_set_hl(0, "ColorfulWinSep_Food", { fg = "#EBCB8B" })
+vim.api.nvim_set_hl(0, "ColorfulWinSep_Track", { fg = track_color })
+
+-- dynamically calculates the color gradient without any pre-allocated highlights
+local function hex2rgb(hex)
+    hex = hex:gsub("#", "")
+    return tonumber("0x" .. hex:sub(1, 2), 16), tonumber("0x" .. hex:sub(3, 4), 16), tonumber("0x" .. hex:sub(5, 6), 16)
+end
+local head_r, head_g, head_b = hex2rgb(snake_body[#snake_body])
+local track_r, track_g, track_b = hex2rgb(track_color)
+math.randomseed(os.time())
+
+require("colorful-winsep").setup({
+    border = { "─", "│", "┌", "┐", "└", "┘" },
+    animate = { enabled = "shift" },
+    indicator_for_2wins = { position = false },
+    colors = snake_colors,
+
+    on_frame_render = function(node, color_idx, offset, total_colors, total_nodes)
+        -- 1. Generate food
+        if not my_game_state.food_index or my_game_state.food_index >= total_nodes then
+            my_game_state.food_index = math.random(0, total_nodes - 1)
+        end
+
+        -- 2. Calculate snake head position based on the offset
+        local head_color_idx = total_colors
+        local head_node_idx = (total_nodes - (offset % total_nodes) + head_color_idx - 2) % total_nodes
+
+        -- 3. Check distance from head
+        local distance_from_head = (head_node_idx - node.index + total_nodes) % total_nodes
+        local is_snake = (distance_from_head < my_game_state.snake_length)
+
+        -- 4. Eat food logic
+        if is_snake and node.index == my_game_state.food_index then
+            my_game_state.food_index = math.random(0, total_nodes - 1)
+            my_game_state.snake_length = my_game_state.snake_length + 1
+            
+            -- Reset game if snake fills the entire border
+            if my_game_state.snake_length >= total_nodes - 2 then
+                my_game_state.snake_length = #snake_body
+            end
+        end
+
+        -- 5. Render
+        if is_snake then
+            local char = "━"
+            if node.char == "│" then char = "┃"
+            elseif node.char == "─" then char = "━"
+            elseif node.char == "┌" then char = "┏"
+            elseif node.char == "┐" then char = "┓"
+            elseif node.char == "└" then char = "┗"
+            elseif node.char == "┘" then char = "┛"
+            elseif node.char == "├" then char = "┣"
+            elseif node.char == "┤" then char = "┫"
+            elseif node.char == "┬" then char = "┳"
+            elseif node.char == "┴" then char = "┻"
+            elseif node.char == "┼" then char = "╋"
+            end
+            
+            local ratio = distance_from_head / math.max(my_game_state.snake_length - 1, 1)
+            ratio = math.max(0, math.min(ratio, 1))
+
+            local r = math.floor(head_r * (1 - ratio) + track_r * ratio)
+            local g = math.floor(head_g * (1 - ratio) + track_g * ratio)
+            local b = math.floor(head_b * (1 - ratio) + track_b * ratio)
+            local hex = string.format("#%02x%02x%02x", r, g, b)
+
+            local hl_name = "ColorfulWinSep_Dyn_" .. distance_from_head .. "_" .. my_game_state.snake_length
+            vim.api.nvim_set_hl(0, hl_name, { fg = hex })
+            return char, hl_name
+        elseif node.index == my_game_state.food_index then
+            return node.char, "ColorfulWinSep_Food"
+        end
+        
+        return nil, "ColorfulWinSep_Track"
+    end,
+})
+```
 
 ## License
 
-This plugin is released under the MIT License.
+This plugin is released under the [MIT](./LICENSE) License.

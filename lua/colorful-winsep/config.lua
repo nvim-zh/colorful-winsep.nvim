@@ -1,0 +1,76 @@
+local M = {}
+M.opts = {
+    -- choose between "single", "rounded", "bold" and "double".
+    border = "bold",
+    excluded_ft = { "packer", "TelescopePrompt", "mason" },
+    highlight = nil, -- nil|string|function. See the docs's Highlights section
+    animate = {
+        ---@type "shift"|"progressive"|false
+        enabled = "shift", -- false to disable or choose a option below (e.g. "shift") and set option for it if needed
+        shift = {
+            delay = 16, -- about 60fps
+            frames = 15, -- how many frames are required to complete the animation
+            easing = "ease_out_cubic", -- available algorithms: linear, ease_out_cubic, ease_in_out_sine, ease_out_quad, ease_out_expo
+        },
+        progressive = {
+            delay = 16,
+            vertical_lerp_factor = 0.15, -- between 0 and 1
+            horizontal_lerp_factor = 0.15, -- between 0 and 1
+        },
+    },
+    indicator_for_2wins = {
+        -- only work when the total of windows is two
+        position = "center", -- false to disable or choose between "center", "start", "end" and "both"
+        symbols = {
+            -- the meaning of left, down ,up, right is the position of separator
+            start_left = "󱞬",
+            end_left = "󱞪",
+            start_down = "󱞾",
+            end_down = "󱟀",
+            start_up = "󱞢",
+            end_up = "󱞤",
+            start_right = "󱞨",
+            end_right = "󱞦",
+        },
+    },
+    colors = {}, -- Add a custom color array. Single color applies statically, multiple colors will create a marquee effect.
+    on_frame_render = nil,  -- Optional callback: function(node, color_idx, offset, total_colors, total_nodes) end. Returns custom_char, custom_hl_group
+}
+
+function M.merge_config(user_opts)
+    user_opts = user_opts or {}
+    M.opts = vim.tbl_deep_extend("force", M.opts, user_opts)
+
+    if M.opts.border == "single" then
+        M.opts.border = { "─", "│", "┌", "┐", "└", "┘" }
+    elseif M.opts.border == "rounded" then
+        M.opts.border = { "─", "│", "╭", "╮", "╰", "╯" }
+    elseif M.opts.border == "bold" then
+        M.opts.border = { "━", "┃", "┏", "┓", "┗", "┛" }
+    elseif M.opts.border == "double" then
+        M.opts.border = { "═", "║", "╔", "╗", "╚", "╝" }
+    end
+
+    if type(M.opts.highlight) == "string" then
+        local fg = M.opts.highlight
+        M.opts.highlight = function()
+            ---@diagnostic disable-next-line: assign-type-mismatch
+            vim.api.nvim_set_hl(0, "ColorfulWinSep", { fg = fg, bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg })
+        end
+    elseif type(M.opts.highlight) == "table" then
+        vim.notify("Colorful-winsep: highlight field don't support table now, check the docs!", vim.log.levels.ERROR)
+        M.opts.highlight = function() end
+    elseif type(M.opts.highlight) == "nil" then
+        M.opts.highlight = function()
+            if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "ColorfulWinSep" })) then
+                vim.api.nvim_set_hl(
+                    0,
+                    "ColorfulWinSep",
+                    { fg = "#957CC6", bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg }
+                )
+            end
+        end
+    end
+end
+
+return M
