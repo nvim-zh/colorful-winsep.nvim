@@ -18,8 +18,8 @@ local M = {
 }
 
 --- Judge whether the current can be started and colorful line
----@param no_exec_files
----@return: boolean
+---@param no_exec_files table
+---@return boolean
 function M.can_create(no_exec_files)
 	if vim.fn.win_gettype(0) == "popup" then -- Skip the floating window
 		M.c_win = api.nvim_get_current_win()
@@ -54,8 +54,8 @@ function M.isWinMove()
 end
 
 --- Determine if there are neighbors in the direction
----@param direction
----@return: boolean
+---@param direction string
+---@return boolean
 function M.direction_have(direction)
 	local winnum = vim.fn.winnr()
 	if vim.fn.winnr(direction) ~= winnum and fn.win_gettype(winnum) ~= "popup" then
@@ -64,9 +64,19 @@ function M.direction_have(direction)
 	return false
 end
 
+--- @class WinOption
+--- @field style string
+--- @field relative string
+--- @field zindex number
+--- @field focusable boolean
+--- @field height number
+--- @field width number
+--- @field row number
+--- @field col number
+---
 --- Get the win property of the orientation
----@param direction : { left = 'h', right = 'l', up = 'k', down = 'j' }
----@return:opts
+--- @param direction string left = 'h', right = 'l', up = 'k', down = 'j'
+--- @return WinOption | nil
 function M.create_direction_win_option(direction)
 	local opts = {
 		style = "minimal",
@@ -160,7 +170,7 @@ function M.create_direction_win_option(direction)
 end
 
 --- Override user configuration
----@param opts : table
+---@param opts table
 function M.set_user_config(opts)
 	if type(opts) == "table" and opts ~= {} then
 		comments.check(opts)
@@ -169,7 +179,7 @@ function M.set_user_config(opts)
 end
 
 --- Calculation window number,Rule out floating window to get the real number
----@return
+---@return number
 function M.calculate_number_windows()
 	local win_len = fn.winnr("$")
 	for i = 1, win_len do

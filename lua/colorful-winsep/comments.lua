@@ -13,9 +13,9 @@ M.check = function(opts)
 end
 
 --- check key in table
----@param tab
----@param key
----@return
+---@param tab table
+---@param key string
+---@return boolean
 function has_key(tab, key)
 	for k, _ in pairs(tab) do
 		if k == key then
@@ -26,7 +26,7 @@ function has_key(tab, key)
 end
 
 ---  fix(#21): repair highlight #21
----@param opts
+---@param opts table
 function Compatiblehighlight(opts)
 	if has_key(opts, "highlight") then
 		if has_key(opts.highlight, "guifg") or has_key(opts.highlight, "guibg") then
