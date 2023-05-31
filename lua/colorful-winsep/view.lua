@@ -10,7 +10,7 @@ local M = {
 }
 
 --- Create floating win show  line
----@return
+---@return boolean
 function M.create_dividing_win()
 	if utils.can_create(M.config.no_exec_files) then
 		M.close_dividing()
@@ -42,7 +42,7 @@ function M.buf_is_valid(buf_id)
 end
 
 --- move show line for floating win
----@return
+---@return boolean
 function M.move_dividing_win()
 	if M.width == fn.winwidth(0) and M.height == fn.winheight(0) then
 		return false
