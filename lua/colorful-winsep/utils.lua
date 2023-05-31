@@ -125,7 +125,11 @@ function M.create_direction_win_option(direction)
 		if M.calculate_number_windows() == 2 then
 			opts.height = math.ceil(opts.height / 2)
 			if M.direction_have(M.direction.left) and not M.direction_have(M.direction.right) then
-				opts.row = opts.row + opts.height + 1
+                if vim.o.cmdheight == 0 then
+                    opts.row = opts.row + opts.height
+                else
+                    opts.row = opts.row + opts.height + 1
+                end
 			end
 		end
 	end
