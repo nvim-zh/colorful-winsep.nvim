@@ -133,13 +133,14 @@ function M.create_direction_win_option(direction)
 
 		--- Used to distinguish only two window, do special processing line
 		if M.calculate_number_windows() == 2 then
+			local even_height = opts.height % 2 == 0
 			opts.height = math.ceil(opts.height / 2)
 			if M.direction_have(M.direction.left) and not M.direction_have(M.direction.right) then
-                if vim.o.cmdheight == 0 then
-                    opts.row = opts.row + opts.height
-                else
-                    opts.row = opts.row + opts.height + 1
-                end
+				if vim.o.cmdheight == 0 and not even_height then
+					opts.row = opts.row + opts.height
+				else
+					opts.row = opts.row + opts.height + 1
+				end
 			end
 		end
 	end
