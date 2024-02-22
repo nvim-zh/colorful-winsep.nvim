@@ -1,176 +1,169 @@
-local api = vim.api
-local fn = vim.fn
 local utils = require("colorful-winsep.utils")
-local M = {
-	wins = {},
-	bufs = {},
-	width = fn.winwidth(0),
-	height = fn.winheight(0),
-	timers = {},
-}
+local direction = require("colorful-winsep.utils").direction
+local LINE = require("colorful-winsep.line")
+local auto_group = require("colorful-winsep.config").auto_group
+local config = require("colorful-winsep.config")
 
---- Create floating win show  line
----@return boolean
-function M.create_dividing_win()
-	if utils.can_create(M.config.no_exec_files) then
-		M.close_dividing()
-		local direction = utils.direction
-		for _, value in pairs(direction) do
-			local opts = utils.create_direction_win_option(value)
-			if utils.direction_have(value) and opts ~= nil then
-				local buf = api.nvim_create_buf(false, true)
-				M.bufs[value] = buf
-				api.nvim_buf_set_option(buf, "buftype", "nofile")
-				api.nvim_buf_set_option(buf, "filetype", "NvimSeparator")
-				local win = api.nvim_open_win(buf, false, opts)
-				M.wins[value] = win
-				api.nvim_win_set_option(win, "winhl", "Normal:NvimSeparator")
+local M = {}
+
+function M:init(opts)
+	M.config = config:merge_options(opts)
+	symbols = M.config.symbols
+
+	self.wins = {
+		[direction.left] = LINE:create_horizontal_line(0, symbols[3], symbols[2], symbols[5]),
+		[direction.right] = LINE:create_horizontal_line(0, symbols[4], symbols[2], symbols[6]),
+		[direction.up] = LINE:create_vertical_line(0, symbols[1], symbols[1], symbols[1]),
+		[direction.bottom] = LINE:create_vertical_line(0, symbols[1], symbols[1], symbols[1]),
+	}
+
+	config.highlight()
+	vim.api.nvim_create_autocmd(M.config.events, {
+		group = auto_group,
+		callback = function()
+			if utils.check_by_no_execfiles(M.config.no_exec_files) then
+				return
 			end
-		end
-		M.width = vim.fn.winwidth(0)
-		M.height = vim.fn.winwidth(0)
-		return true
-	end
-	return false
+			self:dividing_split_line()
+		end,
+	})
+
+	vim.api.nvim_create_autocmd({ "ColorScheme", "ColorSchemePre" }, {
+		group = auto_group,
+		callback = function()
+			config.highlight()
+		end,
+	})
 end
 
-function M.buf_is_valid(buf_id)
-	if buf_id == nil then
-		return false
-	end
-	return true
-end
+function M:dividing_split_line()
+	local anchor = M.config.anchor
+	local c_win_pos = vim.api.nvim_win_get_position(0)
+	local c_win_width = vim.fn.winwidth(0)
+	local c_win_height = vim.fn.winheight(0)
 
---- move show line for floating win
----@return boolean
-function M.move_dividing_win()
-	if M.width == fn.winwidth(0) and M.height == fn.winheight(0) then
-		return false
-	end
-	for key, _ in pairs(M.wins) do
-		local opts = utils.create_direction_win_option(key)
-		if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) then
-			api.nvim_win_set_config(M.wins[key], opts)
+	local win_count = utils.calculate_number_windows()
+	--vim.notify(
+	--	"height: " .. c_win_height .. "\nwidth: " .. c_win_width .. "\nx: " .. c_win_pos[1] .. "\ny:" .. c_win_pos[2]
+	--)
+	if utils.direction_have(direction.left) then
+		local win = self.wins[direction.left]
+		local anchor_height = anchor.left.height
+		local anchor_x = anchor.left.x
+		local anchor_y = anchor.left.y
+
+		if win_count == 2 then
+			local height = c_win_height + anchor_height
+			anchor_height = anchor_height - (height - math.ceil(height / 2))
 		end
-	end
-	return true
-end
 
---- close show line for floating win
-function M.close_dividing()
-	for key, _ in pairs(M.wins) do
-		if M.wins[key] ~= nil and api.nvim_win_is_valid(M.wins[key]) and fn.win_gettype(0) ~= "command" then
-			api.nvim_win_close(M.wins[key], true)
-			M.wins[key] = nil
+		win:set_height(c_win_height + anchor_height)
+		if not utils.direction_have(utils.direction.up) then
+			anchor_x = anchor_x + 1
 		end
-	end
-	if fn.win_gettype(0) ~= "command" then
-		M.wins = {}
-	end
-	for key, _ in pairs(M.bufs) do
-		if M.bufs[key] ~= nil and api.nvim_buf_is_valid(M.bufs[key]) then
-			api.nvim_buf_delete(M.bufs[key], { force = true })
-			M.bufs[key] = nil
-		end
-	end
-	M.bufs = {}
-end
 
---- set line symbol
-function M.set_buf_char()
-	local direction = utils.direction
-	local symbols = M.config.symbols
-	for key, _ in pairs(M.wins) do
-		if key == direction.up or key == direction.down then
-			local len = fn.winwidth(M.wins[key])
-			local str = { "" }
-			for i = 1, len do
-				str[1] = str[1] .. symbols[1]
-			end
-			if M.buf_is_valid(M.bufs[key]) then
-				api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
-			end
-		elseif key == direction.left then
-			local len = fn.winheight(M.wins[key])
-			local str = {}
-			for i = 1, len do
-				str[i] = symbols[2]
-			end
-			if utils.direction_have(direction.up) then
-				str[1] = symbols[3]
-			end
-			if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
-				str[len] = symbols[5]
-			end
-			if M.buf_is_valid(M.bufs[key]) then
-				api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
-			end
-		elseif key == direction.right then
-			local len = fn.winheight(M.wins[key])
-			local str = {}
-			for i = 1, len do
-				str[i] = symbols[2]
-			end
-			if utils.direction_have(direction.up) then
-				str[1] = symbols[4]
-			end
-			if utils.direction_have(direction.down) or vim.o.laststatus ~= 3 and vim.o.laststatus ~= 0 then
-				str[len] = symbols[6]
-			end
-			if M.buf_is_valid(M.bufs[key]) then
-				api.nvim_buf_set_lines(M.bufs[key], 0, -1, false, str)
-			end
-		end
-	end
-end
+		local x = c_win_pos[1] + anchor_x
+		local y = c_win_pos[2] + anchor_y
 
-function M.highlight()
-	local opts = M.config.highlight
-
-	if utils.check_version(0, 9, 0) then
-		-- `nvim_get_hl` is added in 0.9.0
-		if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "NvimSeparator" })) then
-			vim.api.nvim_set_hl(0, "NvimSeparator", opts)
+		if not win:is_show() then
+			win:move(x, y)
+			win:show()
+		elseif y == win:y() then
+			win:smooth_move_x(win:x(), x)
+		else
+			win:move(x, y)
 		end
 	else
-		-- if name is not existed, `nvim_get_hl_by_name` return an error
-		local ok, _ = pcall(vim.api.nvim_get_hl_by_name, "NvimSeparator", false)
-		if not ok then
-			vim.api.nvim_set_hl(0, "NvimSeparator", opts)
+		self.wins[direction.left]:hide()
+	end
+
+	if utils.direction_have(direction.right) then
+		local win = self.wins[direction.right]
+		local anchor_height = anchor.right.height
+		local anchor_x = anchor.right.x
+		local anchor_y = anchor.right.y
+
+		if win_count == 2 then
+			local height = c_win_height + anchor_height
+			anchor_height = anchor_height - (height - math.ceil(height / 2))
+			anchor_x = anchor_x - anchor_height
+			if vim.opt.winbar ~= "" then
+				anchor_x = anchor_x + 1
+			end
 		end
-	end
-end
+		win:set_height(c_win_height + anchor_height)
 
-function M.set_config(opts)
-	utils.set_user_config(opts)
-	M.config = utils.defaultopts
-end
-
-function M.resize_auto_show_float_win()
-	if M.width ~= fn.winwidth(0) or M.height ~= fn.winheight(0) or utils.isWinMove() then
-		if M.create_dividing_win() then
-			M.set_buf_char()
-		elseif M.move_dividing_win() then
-			M.set_buf_char()
+		if not utils.direction_have(utils.direction.up) then
+			anchor_x = anchor_x + 1
 		end
-		M.width = fn.winwidth(0)
-		M.height = fn.winheight(0)
-		M.config.create_event()
+		--win:smooth_move_x(win:x(), c_win_pos[1] + anchor_x)
+		--win:smooth_move_y(win:y(), c_win_pos[2] + anchor_y + c_win_width)
+		local x = c_win_pos[1] + anchor_x
+		local y = c_win_pos[2] + anchor_y + c_win_width
+		if not win:is_show() then
+			win:move(x, y)
+			win:show()
+		elseif win:y() == y then
+			win:smooth_move_x(win:x(), x)
+		else
+			win:move(x, y)
+		end
+	else
+		self.wins[direction.right]:hide()
 	end
-end
 
-function M.start_timer()
-	local timer = vim.loop.new_timer()
-	timer:start(0, M.config.interval, vim.schedule_wrap(M.resize_auto_show_float_win))
-	table.insert(M.timers, timer)
-end
+	if utils.direction_have(direction.up) then
+		local win = self.wins[direction.up]
+		local anchor_width = anchor.up.width
+		local anchor_x = anchor.up.x
+		local anchor_y = anchor.up.y
 
-function M.stop_timer()
-	for i = 1, #M.timers do
-		M.timers[i]:stop()
-		M.timers[i] = nil
+		if win_count == 2 then
+			local width = c_win_width + anchor_width
+			anchor_width = anchor_width - (width - math.ceil(width / 2))
+		end
+		win:set_width(c_win_width + anchor_width)
+
+		local x = c_win_pos[1] + anchor_x
+		local y = c_win_pos[2] + anchor_y
+		if not win:is_show() then
+			win:move(x, y)
+			win:show()
+		elseif x == win:x() then
+			win:smooth_move_y(win:y(), y)
+		else
+			win:move(x, y)
+		end
+	else
+		self.wins[direction.up]:hide()
 	end
-	M.timers = {}
+
+	if utils.direction_have(direction.bottom) then
+		local win = self.wins[direction.bottom]
+		local anchor_width = anchor.bottom.width
+		local anchor_x = anchor.bottom.x
+		local anchor_y = anchor.bottom.y
+
+		if win_count == 2 then
+			local width = c_win_width + anchor_width
+			anchor_width = anchor_width - (width - math.ceil(width / 2))
+			anchor_y = anchor_y - anchor_width + 1
+		end
+		win:set_width(c_win_width + anchor_width)
+
+		local x = c_win_pos[1] + c_win_height + anchor_x
+		local y = c_win_pos[2] + anchor_y
+		if not win:is_show() then
+			win:move(x, y)
+			win:show()
+		elseif x == win:x() then
+			win:smooth_move_y(win:y(), y)
+		else
+			win:move(x, y)
+		end
+	else
+		self.wins[direction.bottom]:hide()
+	end
 end
 
 return M
