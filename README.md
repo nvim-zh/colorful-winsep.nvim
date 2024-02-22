@@ -1,4 +1,4 @@
-# accidentslipt.nvim
+# colorful-winsep.nvim
 
 
 https://github.com/SomesOver/accidentslipt/assets/160035610/2c8ad939-bb42-4a45-997b-a164e2c43108
@@ -20,16 +20,16 @@ This plugin will color the border of active window, like what tmux does for its 
 Using vim-plug:
 
 ```lua
-Plug 'SomesOver/accidentslipt'
+Plug 'nvim-zh/colorful-winsep.nvim'
 ```
 
 Using Packer.nvim:
 
 ```lua
 use {
-    "SomesOver/accidentslipt",
+    "nvim-zh/colorful-winsep.nvim",
     config = function ()
-        require('accidentslipt').setup()
+        require('colorful-winsep').setup()
     end
 }
 ```
@@ -38,7 +38,7 @@ Using lazy.nvim
 
 ```lua
 {
-  "SomesOver/accidentslipt",
+  "nvim-zh/colorful-winsep.nvim",
   config = true,
   event = { "WinNew" },
 }
@@ -47,7 +47,7 @@ Using lazy.nvim
 ## Default configuration
 
 ```lua
-require("accidentslipt").setup({
+require("colorful-winsep").setup({
   -- highlight for Window separator
   hi = {
     bg = "#16161E",
@@ -61,7 +61,7 @@ require("accidentslipt").setup({
 	left = { height = 1, x = -1, y = -1 },
 	right = { height = 1, x = -1, y = 0 },
 	up = { width = 0, x = -1, y = 0 },
-    bottom = { width = 0, x = 1, y = 0 },
+    	bottom = { width = 0, x = 1, y = 0 },
  },
 })
 ```
@@ -70,5 +70,5 @@ require("accidentslipt").setup({
 ## License
 
 This plugin is released under the MIT License.
-# accidentslipt
+# colorful-winsep.nvim
 
