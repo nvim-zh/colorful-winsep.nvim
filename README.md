@@ -66,6 +66,8 @@ require("colorful-winsep").setup({
 })
 ```
 
+## TODO
+- [ ] add marquee(`nvim_buf_add_highlight()`)
 
 ## License
 
