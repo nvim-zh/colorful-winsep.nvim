@@ -144,9 +144,11 @@ function M:create_line()
 				_line:move(_line:x(), start_y)
 				cu = cu - 1
 				if cu < 0 then
-					self.loop:stop()
-					self.loop:close()
-					self.loop = nil
+					if self.loop then
+						self.loop:stop()
+						self.loop:close()
+						self.loop = nil
+					end
 				end
 			end)
 		)
@@ -157,6 +159,11 @@ function M:create_line()
 			vim.api.nvim_win_close(self.window, false)
 			self.window = nil
 			self._show = false
+			if self.loop then
+				self.loop:stop()
+				self.loop:close()
+				self.loop = nil
+			end
 		end
 	end
 
