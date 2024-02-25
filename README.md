@@ -57,6 +57,8 @@ require("colorful-winsep").setup({
   no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
   -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
   symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+  -- Smooth moving switch
+  smooth = true,
   anchor = {
     left = { height = 1, x = -1, y = -1 },
     right = { height = 1, x = -1, y = 0 },

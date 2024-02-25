@@ -22,11 +22,17 @@ INTERFACE					*colorful-winsep-interface*
 			  fg = "#957CC6",
 			  bg = (background color of |hl-Normal|)
 			}
-
+<
 	• no_exec_files: table
 		List of filetype deactivating the plugin.
 		Default: >lua
 			{ "packer", "TelescopePrompt", "mason", "CompetiTest" }
+<
+	
+	• smooth: `bool`
+		Animation switch
+		Default: >lua
+		    [true]
 <
 	• symbols: `table`
 		Symbols for separator lines, the order: horizontal, vertical,

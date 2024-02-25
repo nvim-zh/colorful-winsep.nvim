@@ -68,7 +68,7 @@ function M:dividing_split_line()
 		if not win:is_show() then
 			win:move(x, y)
 			win:show()
-		elseif y == win:y() then
+		elseif y == win:y() and self.config.smooth then
 			win:smooth_move_x(win:x(), x)
 		else
 			win:move(x, y)
@@ -103,7 +103,7 @@ function M:dividing_split_line()
 		if not win:is_show() then
 			win:move(x, y)
 			win:show()
-		elseif win:y() == y then
+		elseif win:y() == y and self.config.smooth then
 			win:smooth_move_x(win:x(), x)
 		else
 			win:move(x, y)
@@ -129,7 +129,7 @@ function M:dividing_split_line()
 		if not win:is_show() then
 			win:move(x, y)
 			win:show()
-		elseif x == win:x() then
+		elseif x == win:x() and self.config.smooth then
 			win:smooth_move_y(win:y(), y)
 		else
 			win:move(x, y)
@@ -156,7 +156,7 @@ function M:dividing_split_line()
 		if not win:is_show() then
 			win:move(x, y)
 			win:show()
-		elseif x == win:x() then
+		elseif x == win:x() and self.config.smooth then
 			win:smooth_move_y(win:y(), y)
 		else
 			win:move(x, y)

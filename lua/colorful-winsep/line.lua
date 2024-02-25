@@ -90,10 +90,16 @@ function M:create_line()
 	end
 
 	function line:smooth_move_x(start_x, end_x)
-		local timer = vim.loop.new_timer()
+		if self.loop then
+			self.loop:stop()
+			self.loop:close()
+			self.loop = vim.loop.new_timer()
+		else
+			self.loop = vim.loop.new_timer()
+		end
 		local _line = self
 		local cu = math.abs(start_x - end_x)
-		timer:start(
+		self.loop:start(
 			0,
 			10,
 			vim.schedule_wrap(function()
@@ -105,18 +111,28 @@ function M:create_line()
 				cu = cu - 1
 				_line:move(start_x, _line:y())
 				if cu < 0 then
-					timer:stop()
-					--timer:close()
+					if self.loop then
+						self.loop:stop()
+						self.loop:close()
+						self.loop = nil
+					end
 				end
 			end)
 		)
 	end
 
 	function line:smooth_move_y(start_y, end_y)
-		local timer = vim.loop.new_timer()
+		if self.loop then
+			self.loop:stop()
+			self.loop:close()
+			self.loop = vim.loop.new_timer()
+		else
+			self.loop = vim.loop.new_timer()
+		end
+
 		local _line = self
 		local cu = math.abs(start_y - end_y)
-		timer:start(
+		self.loop:start(
 			0,
 			3,
 			vim.schedule_wrap(function()
@@ -128,8 +144,9 @@ function M:create_line()
 				_line:move(_line:x(), start_y)
 				cu = cu - 1
 				if cu < 0 then
-					timer:stop()
-					--timer:close()
+					self.loop:stop()
+					self.loop:close()
+					self.loop = nil
 				end
 			end)
 		)
