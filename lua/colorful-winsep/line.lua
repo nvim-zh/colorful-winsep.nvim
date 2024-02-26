@@ -10,7 +10,7 @@ function M:create_line()
 		start_symbol = "",
 		body_symbol = "",
 		end_symbol = "",
-		loop = nil,
+		loop = vim.loop.new_timer(),
 		buffer = buf,
 		window = nil,
 		opts = {
@@ -90,7 +90,7 @@ function M:create_line()
 	end
 
 	function line:smooth_move_x(start_x, end_x)
-		if self.loop then
+		if not self.loop:is_closing() then
 			self.loop:stop()
 			self.loop:close()
 			self.loop = vim.loop.new_timer()
@@ -111,10 +111,9 @@ function M:create_line()
 				cu = cu - 1
 				_line:move(start_x, _line:y())
 				if cu < 0 then
-					if self.loop then
+					if not self.loop:is_closing() then
 						self.loop:stop()
 						self.loop:close()
-						self.loop = nil
 					end
 				end
 			end)
@@ -122,7 +121,7 @@ function M:create_line()
 	end
 
 	function line:smooth_move_y(start_y, end_y)
-		if self.loop then
+		if not self.loop:is_closing() then
 			self.loop:stop()
 			self.loop:close()
 			self.loop = vim.loop.new_timer()
@@ -144,10 +143,9 @@ function M:create_line()
 				_line:move(_line:x(), start_y)
 				cu = cu - 1
 				if cu < 0 then
-					if self.loop then
+					if not self.loop:is_closing() then
 						self.loop:stop()
 						self.loop:close()
-						self.loop = nil
 					end
 				end
 			end)
@@ -159,10 +157,9 @@ function M:create_line()
 			vim.api.nvim_win_close(self.window, false)
 			self.window = nil
 			self._show = false
-			if self.loop then
+			if not self.loop:is_closing() then
 				self.loop:stop()
 				self.loop:close()
-				self.loop = nil
 			end
 		end
 	end
