@@ -208,7 +208,7 @@ function M:create_line()
 		end
 
 		if utils.direction_have(utils.direction.bottom) then
-			height = height + 1
+			height = height-- + 1
 		end
 		self:hcorrection(height)
 		self.opts.height = height
