@@ -152,6 +152,9 @@ function M:dividing_split_line()
 		win:set_width(c_win_width + anchor_width)
 
 		local x = c_win_pos[1] + c_win_height + anchor_x
+		if vim.o.winbar == "" then
+			x = x - 1
+		end
 		local y = c_win_pos[2] + anchor_y
 		if not win:is_show() then
 			win:move(x, y)

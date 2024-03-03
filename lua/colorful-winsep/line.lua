@@ -153,7 +153,7 @@ function M:create_line()
 	end
 
 	function line:hide()
-		if self.window ~= nil then
+		if self.window ~= nil and api.nvim_win_is_valid(self.window) then
 			vim.api.nvim_win_close(self.window, false)
 			self.window = nil
 			self._show = false
@@ -207,7 +207,7 @@ function M:create_line()
 			height = height + 1
 		end
 
-		if utils.direction_have(utils.direction.bottom) then
+		if utils.direction_have(utils.direction.bottom) and vim.o.winbar ~= "" then
 			height = height + 1
 		end
 		self:hcorrection(height)
