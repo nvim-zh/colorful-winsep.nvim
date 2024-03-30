@@ -1,7 +1,7 @@
 local M = {
 	default = {
 		symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-		no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest" },
+		no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "neo-tree" },
 		hi = { fg = "#957CC6", bg = vim.api.nvim_get_hl_by_name("Normal", true)["background"] },
 		events = { "WinEnter", "BufEnter", "WinResized", "VimResized" },
 		smooth = true,
