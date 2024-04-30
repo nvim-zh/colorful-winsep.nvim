@@ -152,6 +152,98 @@ function M:create_line()
 		)
 	end
 
+	function line:smooth_move_x_exp(start_x, end_x)
+		if not self.loop:is_closing() then
+			self.loop:stop()
+			self.loop:close()
+			self.loop = vim.loop.new_timer()
+		else
+			self.loop = vim.loop.new_timer()
+		end
+
+		local _line = self
+		local position = start_x -- Initialize position to start_x
+		local target = end_x -- Set the target position
+		local delta_time = 0.1 -- Default delta time
+		local smooth_speed = 1 -- Default smoothing speed
+
+		self.loop:start(
+			0,
+			3,
+			vim.schedule_wrap(function()
+				-- Calculate exponential decay
+				local decay_factor = math.exp(-smooth_speed * delta_time)
+
+				-- Update position based on direction
+				if start_x > end_x then
+					position = math.max(target, position - 1)
+				elseif start_x < end_x then
+					position = math.min(target, position + 1)
+				end
+
+				-- Perform linear interpolation
+				position = utils.lerp(target, position, decay_factor)
+
+				-- Update line position
+				_line:move(position, _line:y())
+
+				-- Check if position is close enough to the target
+				if math.abs(position - target) < 0.1 then
+					if not self.loop:is_closing() then
+						self.loop:stop()
+						self.loop:close()
+					end
+				end
+			end)
+		)
+	end
+
+	function line:smooth_move_y_exp(start_y, end_y)
+		if not self.loop:is_closing() then
+			self.loop:stop()
+			self.loop:close()
+			self.loop = vim.loop.new_timer()
+		else
+			self.loop = vim.loop.new_timer()
+		end
+
+		local _line = self
+		local position = start_y -- Initialize position to start_y
+		local target = end_y -- Set the target position
+		local delta_time = 0.1 -- Default delta time
+		local smooth_speed = 1 -- Default smoothing speed
+
+		self.loop:start(
+			0,
+			3,
+			vim.schedule_wrap(function()
+				-- Calculate exponential decay
+				local decay_factor = math.exp(-smooth_speed * delta_time)
+
+				-- Update position based on direction
+				if start_y > end_y then
+					position = math.max(target, position - 1)
+				elseif start_y < end_y then
+					position = math.min(target, position + 1)
+				end
+
+				-- Perform linear interpolation
+				position = utils.lerp(target, position, decay_factor)
+
+				-- Update line position
+				_line:move(_line:x(), position)
+
+				-- Check if position is close enough to the target
+				if math.abs(position - target) < 0.1 then
+					if not self.loop:is_closing() then
+						self.loop:stop()
+						self.loop:close()
+					end
+				end
+			end)
+		)
+	end
+
 	function line:hide()
 		if self.window ~= nil and api.nvim_win_is_valid(self.window) then
 			vim.api.nvim_win_close(self.window, false)
