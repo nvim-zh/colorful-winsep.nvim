@@ -63,4 +63,8 @@ function M.check_version(major, minor, patch)
 	return major >= vim.version()["major"] and minor >= vim.version()["minor"] and patch >= vim.version()["patch"]
 end
 
+function M.lerp(a, b, t)
+	return a + (b - a) * t
+end
+
 return M

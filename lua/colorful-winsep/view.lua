@@ -69,7 +69,11 @@ function M:dividing_split_line()
 			win:move(x, y)
 			win:show()
 		elseif y == win:y() and self.config.smooth then
-			win:smooth_move_x(win:x(), x)
+			if self.config.exponential_smoothing then
+				win:smooth_move_x_exp(win:x(), x)
+			else
+				win:smooth_move_x(win:x(), x)
+			end
 		else
 			win:move(x, y)
 		end
@@ -96,15 +100,17 @@ function M:dividing_split_line()
 		if not utils.direction_have(utils.direction.up) then
 			anchor_x = anchor_x + 1
 		end
-		--win:smooth_move_x(win:x(), c_win_pos[1] + anchor_x)
-		--win:smooth_move_y(win:y(), c_win_pos[2] + anchor_y + c_win_width)
 		local x = c_win_pos[1] + anchor_x
 		local y = c_win_pos[2] + anchor_y + c_win_width
 		if not win:is_show() then
 			win:move(x, y)
 			win:show()
 		elseif win:y() == y and self.config.smooth then
-			win:smooth_move_x(win:x(), x)
+			if self.config.exponential_smoothing then
+				win:smooth_move_x_exp(win:x(), x)
+			else
+				win:smooth_move_x(win:x(), x)
+			end
 		else
 			win:move(x, y)
 		end
@@ -130,7 +136,11 @@ function M:dividing_split_line()
 			win:move(x, y)
 			win:show()
 		elseif x == win:x() and self.config.smooth then
-			win:smooth_move_y(win:y(), y)
+			if self.config.exponential_smoothing then
+				win:smooth_move_y_exp(win:y(), y)
+			else
+				win:smooth_move_y(win:y(), y)
+			end
 		else
 			win:move(x, y)
 		end
@@ -160,7 +170,11 @@ function M:dividing_split_line()
 			win:move(x, y)
 			win:show()
 		elseif x == win:x() and self.config.smooth then
-			win:smooth_move_y(win:y(), y)
+			if self.config.exponential_smoothing then
+				win:smooth_move_y_exp(win:y(), y)
+			else
+				win:smooth_move_y(win:y(), y)
+			end
 		else
 			win:move(x, y)
 		end
