@@ -317,7 +317,7 @@ function M:create_vertical_line(width, start_symbol, body_symbol, end_symbol)
 	line.end_symbol = end_symbol
 
 	line:set_width(width)
-	line:set_height(1)
+	line.opts.height = 1
 	function line:vcorrection(width)
 		local line = utils.build_vertical_line_symbol(width, self.start_symbol, self.body_symbol, self.end_symbol)
 		vim.api.nvim_buf_set_lines(self.buffer, 0, -1, false, line)
@@ -332,7 +332,7 @@ function M:create_horizontal_line(height, start_symbol, body_symbol, end_symbol)
 	line.body_symbol = body_symbol
 	line.end_symbol = end_symbol
 
-	line:set_width(1)
+	line.opts.width = 1
 	line:set_height(height)
 	function line:hcorrection(height)
 		local line = utils.build_horizontal_line_symbol(height, self.start_symbol, self.body_symbol, self.end_symbol)
