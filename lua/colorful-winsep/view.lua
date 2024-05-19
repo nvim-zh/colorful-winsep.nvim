@@ -8,7 +8,7 @@ local M = {}
 
 function M:init(opts)
 	M.config = config:merge_options(opts)
-	symbols = M.config.symbols
+	local symbols = M.config.symbols
 
 	self.wins = {
 		[direction.left] = LINE:create_horizontal_line(0, symbols[3], symbols[2], symbols[5]),
@@ -20,8 +20,15 @@ function M:init(opts)
 	config.highlight()
 	vim.api.nvim_create_autocmd(M.config.events, {
 		group = auto_group,
-		callback = function()
+		callback = function(arg)
+			-- 根据用户规则排除窗口
 			if utils.check_by_no_execfiles(M.config.no_exec_files) then
+				return
+			end
+			-- 排除所有浮动窗口(主要针对notify 动画，可能造成大量的回调浪费性能)
+			local win_config = vim.api.nvim_win_get_config(vim.fn.bufwinid(arg.buf))
+			local is_floating = win_config.relative ~= nil and win_config.relative ~= ""
+			if is_floating then
 				return
 			end
 			self:dividing_split_line()
