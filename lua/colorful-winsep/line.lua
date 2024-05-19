@@ -302,11 +302,6 @@ function M:create_line()
 		if utils.direction_have(utils.direction.bottom) and vim.o.winbar ~= "" then
 			height = height + 1
 		end
-		
-		if not utils.direction_have(utils.direction.bottom) and vim.o.laststatus == 3 then
-		    height = height - 1
-		end
-
 		self:hcorrection(height)
 		self.opts.height = height
 		self:load_opts(self.opts)
