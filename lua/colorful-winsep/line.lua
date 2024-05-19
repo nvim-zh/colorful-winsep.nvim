@@ -120,6 +120,8 @@ function M:create_line()
 		)
 	end
 
+	function line:focus_animation(start, end_, time) end
+
 	function line:smooth_move_y(start_y, end_y)
 		if not self.loop:is_closing() then
 			self.loop:stop()
@@ -295,15 +297,21 @@ function M:create_line()
 	end
 
 	function line:set_height(height)
+		--print(string.format("winheight %s", vim.fn.winheight(0)))
 		if utils.direction_have(utils.direction.up) then
 			height = height + 1
 		end
 
-		if utils.direction_have(utils.direction.bottom) and vim.o.winbar ~= "" then
+		if vim.o.winbar ~= "" then
 			height = height + 1
 		end
 
+		if not utils.direction_have(utils.direction.bottom) and vim.o.laststatus == 3 then
+			height = height - 1
+		end
+
 		self:hcorrection(height)
+		--print(string.format("winseip height %s", height))
 		self.opts.height = height
 		self:load_opts(self.opts)
 	end
