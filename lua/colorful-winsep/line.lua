@@ -127,10 +127,10 @@ function M:create_line()
 	---@param x integer
 	---@param y integer
 	---@param color integer
-	function line:pos_color(x, y, color)
-		local char = utils.get_buffer_char(self.buffer, x, y)
+	function line:pos_color(x, y, color, symbol)
+		--local char = utils.get_buffer_char(self.buffer, x, y)
 		local opt = {
-			virt_text = { { char, color } },
+			virt_text = { { symbol, color } },
 			virt_text_pos = "overlay",
 		}
 		local id = vim.api.nvim_buf_set_extmark(self.buffer, ns_id, x, y, opt)
