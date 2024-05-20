@@ -66,7 +66,7 @@ require("colorful-winsep").setup({
     up = { width = 0, x = -1, y = 0 },
     bottom = { width = 0, x = 1, y = 0 },
  },
-})
+ light_pollution = function(lines) end,
 ```
 
 ## TODO
