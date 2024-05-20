@@ -2,6 +2,8 @@ local M = {}
 local api = vim.api
 local utils = require("colorful-winsep.utils")
 
+local ns_id = api.nvim_create_namespace("colorful-winsep")
+
 function M:create_line()
 	local buf = api.nvim_create_buf(false, true)
 	api.nvim_buf_set_option(buf, "buftype", "nofile")
@@ -16,13 +18,14 @@ function M:create_line()
 		opts = {
 			style = "minimal",
 			relative = "editor",
-			zindex = 10,
+			zindex = 1,
 			focusable = false,
 			height = 1,
 			width = 1,
 			row = 0,
 			col = 0,
 		},
+		extmarks = {},
 		_show = false,
 	}
 
@@ -120,7 +123,23 @@ function M:create_line()
 		)
 	end
 
-	function line:focus_animation(start, end_, time) end
+	--- 高亮指定位置
+	---@param x integer
+	---@param y integer
+	---@param color integer
+	function line:pos_color(x, y, color)
+		local char = utils.get_buffer_char(self.buffer, x, y)
+		local opt = {
+			virt_text = { { char, color } },
+			virt_text_pos = "overlay",
+		}
+		local id = vim.api.nvim_buf_set_extmark(self.buffer, ns_id, x, y, opt)
+		local key = string.format("%s_%s", x, y)
+		if self.extmarks[key] ~= nil then
+			vim.api.nvim_buf_del_extmark(self.buffer, ns_id, self.extmarks[key])
+		end
+		self.extmarks[key] = id
+	end
 
 	function line:smooth_move_y(start_y, end_y)
 		if not self.loop:is_closing() then
@@ -273,6 +292,8 @@ function M:create_line()
 		return self.opts.col
 	end
 
+	---@param x
+	---@param y
 	function line:move(x, y)
 		self:movecorrection()
 		self.opts.row = x

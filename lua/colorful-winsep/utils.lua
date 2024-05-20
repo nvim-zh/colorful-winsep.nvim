@@ -67,4 +67,13 @@ function M.lerp(a, b, t)
 	return a + (b - a) * t
 end
 
+function M.get_buffer_char(bufnr, line, col)
+	local char = vim.api.nvim_buf_get_text(bufnr, line, col, line, col + 4, {})
+	if #char > 0 then
+		return char[1]
+	else
+		return " "
+	end
+end
+
 return M

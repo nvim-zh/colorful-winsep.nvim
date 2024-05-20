@@ -32,6 +32,7 @@ function M:init(opts)
 				return
 			end
 			self:dividing_split_line()
+			M.config.light_pollution(self.wins)
 		end,
 	})
 

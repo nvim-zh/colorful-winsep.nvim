@@ -12,6 +12,7 @@ local M = {
 			up = { width = 0, x = -1, y = 0 },
 			bottom = { width = 0, x = 1, y = 0 },
 		},
+		light_pollution = function(lines) end,
 	},
 	auto_group = vim.api.nvim_create_augroup("NvimSeparator", { clear = true }),
 }
