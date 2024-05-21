@@ -26,10 +26,13 @@ function M:init(opts)
 				return
 			end
 			-- 排除所有浮动窗口(主要针对notify 动画，可能造成大量的回调浪费性能)
-			local win_config = vim.api.nvim_win_get_config(vim.fn.bufwinid(arg.buf))
-			local is_floating = win_config.relative ~= nil and win_config.relative ~= ""
-			if is_floating then
-				return
+			local c_win = vim.fn.bufwinid(arg.buf)
+			if c_win ~= -1 then
+				local win_config = vim.api.nvim_win_get_config(c_win)
+				local is_floating = win_config.relative ~= nil and win_config.relative ~= ""
+				if is_floating then
+					return
+				end
 			end
 			self:dividing_split_line()
 			M.config.light_pollution(self.wins)
