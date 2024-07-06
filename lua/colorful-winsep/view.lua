@@ -151,8 +151,14 @@ function M:dividing_split_line()
 		local anchor_y = anchor.up.y
 
 		if win_count == 2 then
-			local width = c_win_width + anchor_width
-			anchor_width = anchor_width - (width - math.ceil(width / 2))
+			if seq then
+				local width = c_win_width + anchor_width
+				anchor_width = anchor_width - (width - math.ceil(width / 2))
+			else
+				local width = c_win_width + anchor_width
+				anchor_width = anchor_width - (width - math.ceil(width / 2))
+				anchor_y = anchor_y - anchor_width + 1
+			end
 		end
 		win:set_width(c_win_width + anchor_width)
 
@@ -181,9 +187,14 @@ function M:dividing_split_line()
 		local anchor_y = anchor.bottom.y
 
 		if win_count == 2 then
-			local width = c_win_width + anchor_width
-			anchor_width = anchor_width - (width - math.ceil(width / 2))
-			anchor_y = anchor_y - anchor_width + 1
+			if seq then
+				local width = c_win_width + anchor_width
+				anchor_width = anchor_width - (width - math.ceil(width / 2))
+				anchor_y = anchor_y - anchor_width + 1
+			else
+				local width = c_win_width + anchor_width
+				anchor_width = anchor_width - (width - math.ceil(width / 2))
+			end
 		end
 		win:set_width(c_win_width + anchor_width)
 
