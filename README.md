@@ -40,7 +40,7 @@ Using lazy.nvim
 {
   "nvim-zh/colorful-winsep.nvim",
   config = true,
-  event = { "WinNew" },
+  event = { "WinLeave" },
 }
 ```
 
