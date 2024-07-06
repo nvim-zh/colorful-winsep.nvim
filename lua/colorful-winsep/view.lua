@@ -49,6 +49,7 @@ end
 
 function M:dividing_split_line()
 	local anchor = M.config.anchor
+	local seq = M.config.only_line_seq
 	local c_win_pos = vim.api.nvim_win_get_position(0)
 	local c_win_width = vim.fn.winwidth(0)
 	local c_win_height = vim.fn.winheight(0)
@@ -64,8 +65,17 @@ function M:dividing_split_line()
 		local anchor_y = anchor.left.y
 
 		if win_count == 2 then
-			local height = c_win_height + anchor_height
-			anchor_height = anchor_height - (height - math.ceil(height / 2))
+			if seq then
+				local height = c_win_height + anchor_height
+				anchor_height = anchor_height - (height - math.ceil(height / 2))
+			else
+				local height = c_win_height + anchor_height
+				anchor_height = anchor_height - (height - math.ceil(height / 2))
+				anchor_x = anchor_x - anchor_height
+				if vim.opt.winbar ~= "" then
+					anchor_x = anchor_x + 1
+				end
+			end
 		end
 
 		win:set_height(c_win_height + anchor_height)
@@ -99,11 +109,16 @@ function M:dividing_split_line()
 		local anchor_y = anchor.right.y
 
 		if win_count == 2 then
-			local height = c_win_height + anchor_height
-			anchor_height = anchor_height - (height - math.ceil(height / 2))
-			anchor_x = anchor_x - anchor_height
-			if vim.opt.winbar ~= "" then
-				anchor_x = anchor_x + 1
+			if seq then
+				local height = c_win_height + anchor_height
+				anchor_height = anchor_height - (height - math.ceil(height / 2))
+				anchor_x = anchor_x - anchor_height
+				if vim.opt.winbar ~= "" then
+					anchor_x = anchor_x + 1
+				end
+			else
+				local height = c_win_height + anchor_height
+				anchor_height = anchor_height - (height - math.ceil(height / 2))
 			end
 		end
 		win:set_height(c_win_height + anchor_height)

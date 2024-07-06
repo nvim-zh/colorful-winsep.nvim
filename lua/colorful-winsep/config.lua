@@ -6,6 +6,7 @@ local M = {
 		events = { "WinEnter", "WinResized", "SessionLoadPost" },
 		smooth = true,
 		exponential_smoothing = true,
+		only_line_seq = true,
 		anchor = {
 			left = { height = 1, x = -1, y = -1 },
 			right = { height = 1, x = -1, y = 0 },
