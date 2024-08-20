@@ -278,10 +278,12 @@ function M:create_line()
 	end
 
 	function line:show()
-		win = api.nvim_open_win(self.buffer, false, self.opts)
-		api.nvim_win_set_option(win, "winhl", "Normal:NvimSeparator")
-		self.window = win
-		self._show = true
+		if vim.api.nvim_buf_is_valid(self.buffer) then
+			win = api.nvim_open_win(self.buffer, false, self.opts)
+			api.nvim_win_set_option(win, "winhl", "Normal:NvimSeparator")
+			self.window = win
+			self._show = true
+		end
 	end
 
 	function line:x()
@@ -349,8 +351,10 @@ function M:create_vertical_line(width, start_symbol, body_symbol, end_symbol)
 	line:set_width(width)
 	line.opts.height = 1
 	function line:vcorrection(width)
-		local line = utils.build_vertical_line_symbol(width, self.start_symbol, self.body_symbol, self.end_symbol)
-		vim.api.nvim_buf_set_lines(self.buffer, 0, -1, false, line)
+		if vim.api.nvim_buf_is_valid(self.buffer) then
+			local line = utils.build_vertical_line_symbol(width, self.start_symbol, self.body_symbol, self.end_symbol)
+			vim.api.nvim_buf_set_lines(self.buffer, 0, -1, false, line)
+		end
 	end
 	return line
 end
@@ -365,8 +369,10 @@ function M:create_horizontal_line(height, start_symbol, body_symbol, end_symbol)
 	line.opts.width = 1
 	line:set_height(height)
 	function line:hcorrection(height)
-		local line = utils.build_horizontal_line_symbol(height, self.start_symbol, self.body_symbol, self.end_symbol)
-		vim.api.nvim_buf_set_lines(self.buffer, 0, -1, false, line)
+		if vim.api.nvim_buf_is_valid(self.buffer) then
+			local line = utils.build_horizontal_line_symbol(height, self.start_symbol, self.body_symbol, self.end_symbol)
+			vim.api.nvim_buf_set_lines(self.buffer, 0, -1, false, line)
+		end
 	end
 	return line
 end
