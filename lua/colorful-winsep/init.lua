@@ -5,4 +5,8 @@ function M.setup(opts)
 	view:init(opts)
 end
 
+function M.hide()
+	view:hide()
+end
+
 return M
