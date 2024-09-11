@@ -220,4 +220,10 @@ function M:dividing_split_line()
 	end
 end
 
+function M:hide()
+	for _, line in pairs(self.wins) do
+		line:hide()
+	end
+end
+
 return M
