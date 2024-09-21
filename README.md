@@ -79,6 +79,3 @@ require("colorful-winsep").setup({
 
 This plugin is released under the MIT License.
 # colorful-winsep.nvim
-
-
-
