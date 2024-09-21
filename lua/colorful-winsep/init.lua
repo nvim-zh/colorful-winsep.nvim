@@ -9,4 +9,8 @@ function M.hide()
   view:hide()
 end
 
+function M.render()
+  view:dividing_split_line()
+end
+
 return M
