@@ -17,6 +17,7 @@ function M:create_line()
     window = nil,
     opts = {
       style = "minimal",
+      border = "none",
       relative = "editor",
       zindex = 1,
       focusable = false,
