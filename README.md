@@ -11,7 +11,7 @@ This plugin will color the border of active window, like what tmux does for its 
 
 ## Requirements
 
-+ Neovim 0.8.3+
++ Neovim 0.11.3+
 + [Nerd Fonts](https://www.nerdfonts.com/)
 
 ## Install
@@ -47,35 +47,32 @@ Using lazy.nvim
 ## Default configuration
 
 ```lua
-require("colorful-winsep").setup({
-  -- highlight for Window separator
-  hi = {
-    bg = "#16161E",
-    fg = "#1F3442",
-  },
-  -- This plugin will not be activated for filetype in the following table.
-  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
-  -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
-  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-  -- #70: https://github.com/nvim-zh/colorful-winsep.nvim/discussions/70
-  only_line_seq = true,
-  -- Smooth moving switch
-  smooth = true,
-  exponential_smoothing = true,
-  anchor = {
-    left = { height = 1, x = -1, y = -1 },
-    right = { height = 1, x = -1, y = 0 },
-    up = { width = 0, x = -1, y = 0 },
-    bottom = { width = 0, x = 1, y = 0 },
- },
- light_pollution = function(lines) end,
-})
+M.opts = {
+    symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+    excluded_ft = { "packer", "TelescopePrompt", "mason" },
+    highlight = { fg = "#957CC6", bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg },
+    indicator_for_2wins = {
+        -- only work when the total of windows is two
+        position = nil, -- nil to disable or choose between "center", "start", "end" and "both"
+        symbols = {
+            -- the meaning of left, down ,up, right is the position of separator
+            start_left = "󱞬",
+            end_left = "󱞪",
+            start_down = "󱞾",
+            end_down = "󱟀",
+            start_up = "󱞢",
+            end_up = "󱞤",
+            start_right = "󱞨",
+            end_right = "󱞦",
+        },
+    },
+}
 ```
 
 ## TODO
-- [ ] add marquee(`nvim_buf_add_highlight()`)
+- [ ] add marquee
+- [ ] highlight the floating window border
 
 ## License
 
 This plugin is released under the MIT License.
-# colorful-winsep.nvim
