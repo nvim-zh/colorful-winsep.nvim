@@ -1,229 +1,209 @@
-local utils = require("colorful-winsep.utils")
-local direction = require("colorful-winsep.utils").direction
-local LINE = require("colorful-winsep.line")
-local auto_group = require("colorful-winsep.config").auto_group
+local Separator = require("colorful-winsep.separator")
 local config = require("colorful-winsep.config")
+local utils = require("colorful-winsep.utils")
+local fn = vim.fn
+local directions = utils.directions
 
 local M = {}
+M.separators = {
+    left = Separator:new(),
+    down = Separator:new(),
+    up = Separator:new(),
+    right = Separator:new(),
+}
 
-function M:init(opts)
-  M.config = config:merge_options(opts)
-  local symbols = M.config.symbols
+---@param only_2wins boolean we should deal with 2 windows situation
+function M.render_left(only_2wins)
+    local sep_height = fn.winheight(0)
+    local anchor_row = 0
+    local anchor_col = -1
+    local sep = M.separators.left
+    sep.start_symbol = config.opts.border[2]
+    sep.body_symbol = config.opts.border[2]
+    sep.end_symbol = config.opts.border[2]
 
-  self.wins = {
-    [direction.left] = LINE:create_horizontal_line(0, symbols[3], symbols[2], symbols[5]),
-    [direction.right] = LINE:create_horizontal_line(0, symbols[4], symbols[2], symbols[6]),
-    [direction.up] = LINE:create_vertical_line(0, symbols[1], symbols[1], symbols[1]),
-    [direction.bottom] = LINE:create_vertical_line(0, symbols[1], symbols[1], symbols[1]),
-  }
+    if utils.has_winbar() then
+        sep_height = sep_height + 1
+        anchor_row = anchor_row - 1
+    end
 
-  config.highlight()
-  vim.api.nvim_create_autocmd(M.config.events, {
-    group = auto_group,
-    callback = function(arg)
-      -- 根据用户规则排除窗口
-      if utils.check_by_no_execfiles(M.config.no_exec_files) then
-        return
-      end
-      -- 排除所有浮动窗口(主要针对notify 动画，可能造成大量的回调浪费性能)
-      local c_win = vim.fn.bufwinid(arg.buf)
-      if c_win ~= -1 then
-        local win_config = vim.api.nvim_win_get_config(c_win)
-        local is_floating = win_config.relative ~= nil and win_config.relative ~= ""
-        if is_floating then
-          return
+    if utils.has_adjacent_win(directions.up) then
+        sep.start_symbol = config.opts.border[3]
+        sep_height = sep_height + 1
+        anchor_row = anchor_row - 1
+    end
+    if utils.has_adjacent_win(directions.down) then
+        sep.end_symbol = config.opts.border[5]
+        sep_height = sep_height + 1
+    end
+
+    if only_2wins then
+        anchor_row = sep_height - math.ceil(sep_height / 2)
+        sep_height = math.ceil(sep_height / 2)
+        if utils.has_winbar() then
+            anchor_row = anchor_row - 1
         end
-      end
-      self:dividing_split_line()
-      M.config.light_pollution(self.wins)
-    end,
-  })
+        if config.opts.indicator_for_2wins.position == "center" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_left
+        elseif config.opts.indicator_for_2wins.position == "start" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_left
+        elseif config.opts.indicator_for_2wins.position == "end" then
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_left
+        elseif config.opts.indicator_for_2wins.position == "both" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_left
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_left
+        end
+    end
 
-  vim.api.nvim_create_autocmd({ "ColorScheme", "ColorSchemePre" }, {
-    group = auto_group,
-    callback = function()
-      config.highlight()
-    end,
-  })
+    sep:vertical_init(sep_height)
+    if not sep._show then
+        sep:show()
+    end
+    sep:move(anchor_row, anchor_col)
 end
 
-function M:dividing_split_line()
-  local anchor = M.config.anchor
-  local seq = M.config.only_line_seq
-  local c_win_pos = vim.api.nvim_win_get_position(0)
-  local c_win_width = vim.fn.winwidth(0)
-  local c_win_height = vim.fn.winheight(0)
+---@param only_2wins boolean we should deal with 2 windows situation
+function M.render_down(only_2wins)
+    local sep_width = fn.winwidth(0)
+    local anchor_row = fn.winheight(0)
+    local anchor_col = 0
+    local sep = M.separators.down
+    sep.start_symbol = config.opts.border[1]
+    sep.body_symbol = config.opts.border[1]
+    sep.end_symbol = config.opts.border[1]
 
-  local win_count = utils.calculate_number_windows()
-  --vim.notify(
-  --	"height: " .. c_win_height .. "\nwidth: " .. c_win_width .. "\nx: " .. c_win_pos[1] .. "\ny:" .. c_win_pos[2]
-  --)
-  if utils.direction_have(direction.left) then
-    local win = self.wins[direction.left]
-    local anchor_height = anchor.left.height
-    local anchor_x = anchor.left.x
-    local anchor_y = anchor.left.y
+    if utils.has_adjacent_win(directions.right) then
+        sep.end_symbol = config.opts.border[6]
+        sep_width = sep_width + 1
+    end
 
-    if win_count == 2 then
-      if seq then
-        local height = c_win_height + anchor_height
-        anchor_height = anchor_height - (height - math.ceil(height / 2))
-      else
-        local height = c_win_height + anchor_height
-        anchor_height = anchor_height - (height - math.ceil(height / 2))
-        anchor_x = anchor_x - anchor_height
-        if vim.opt.winbar ~= "" then
-          anchor_x = anchor_x + 1
+    if only_2wins then
+        sep_width = math.ceil(sep_width / 2)
+        if config.opts.indicator_for_2wins.position == "center" then
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_down
+        elseif config.opts.indicator_for_2wins.position == "start" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_down
+        elseif config.opts.indicator_for_2wins.position == "end" then
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_down
+        elseif config.opts.indicator_for_2wins.position == "both" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_down
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_down
         end
-      end
     end
 
-    win:set_height(c_win_height + anchor_height)
-    if not utils.direction_have(utils.direction.up) then
-      anchor_x = anchor_x + 1
+    sep:horizontal_init(sep_width)
+    if not sep._show then
+        sep:show()
     end
-
-    local x = c_win_pos[1] + anchor_x
-    local y = c_win_pos[2] + anchor_y
-
-    if not win:is_show() then
-      win:move(x, y)
-      win:show()
-    elseif y == win:y() and self.config.smooth then
-      if self.config.exponential_smoothing then
-        win:smooth_move_x_exp(win:x(), x)
-      else
-        win:smooth_move_x(win:x(), x)
-      end
-    else
-      win:move(x, y)
-    end
-  else
-    self.wins[direction.left]:hide()
-  end
-
-  if utils.direction_have(direction.right) then
-    local win = self.wins[direction.right]
-    local anchor_height = anchor.right.height
-    local anchor_x = anchor.right.x
-    local anchor_y = anchor.right.y
-
-    if win_count == 2 then
-      if seq then
-        local height = c_win_height + anchor_height
-        anchor_height = anchor_height - (height - math.ceil(height / 2))
-        anchor_x = anchor_x - anchor_height
-        if vim.opt.winbar ~= "" then
-          anchor_x = anchor_x + 1
-        end
-      else
-        local height = c_win_height + anchor_height
-        anchor_height = anchor_height - (height - math.ceil(height / 2))
-      end
-    end
-    win:set_height(c_win_height + anchor_height)
-
-    if not utils.direction_have(utils.direction.up) then
-      anchor_x = anchor_x + 1
-    end
-    local x = c_win_pos[1] + anchor_x
-    local y = c_win_pos[2] + anchor_y + c_win_width
-    if not win:is_show() then
-      win:move(x, y)
-      win:show()
-    elseif win:y() == y and self.config.smooth then
-      if self.config.exponential_smoothing then
-        win:smooth_move_x_exp(win:x(), x)
-      else
-        win:smooth_move_x(win:x(), x)
-      end
-    else
-      win:move(x, y)
-    end
-  else
-    self.wins[direction.right]:hide()
-  end
-
-  if utils.direction_have(direction.up) then
-    local win = self.wins[direction.up]
-    local anchor_width = anchor.up.width
-    local anchor_x = anchor.up.x
-    local anchor_y = anchor.up.y
-
-    if win_count == 2 then
-      if seq then
-        local width = c_win_width + anchor_width
-        anchor_width = anchor_width - (width - math.ceil(width / 2))
-      else
-        local width = c_win_width + anchor_width
-        anchor_width = anchor_width - (width - math.ceil(width / 2))
-        anchor_y = anchor_y - anchor_width + 1
-      end
-    end
-    win:set_width(c_win_width + anchor_width)
-
-    local x = c_win_pos[1] + anchor_x
-    local y = c_win_pos[2] + anchor_y
-    if not win:is_show() then
-      win:move(x, y)
-      win:show()
-    elseif x == win:x() and self.config.smooth then
-      if self.config.exponential_smoothing then
-        win:smooth_move_y_exp(win:y(), y)
-      else
-        win:smooth_move_y(win:y(), y)
-      end
-    else
-      win:move(x, y)
-    end
-  else
-    self.wins[direction.up]:hide()
-  end
-
-  if utils.direction_have(direction.bottom) then
-    local win = self.wins[direction.bottom]
-    local anchor_width = anchor.bottom.width
-    local anchor_x = anchor.bottom.x
-    local anchor_y = anchor.bottom.y
-
-    if win_count == 2 then
-      if seq then
-        local width = c_win_width + anchor_width
-        anchor_width = anchor_width - (width - math.ceil(width / 2))
-        anchor_y = anchor_y - anchor_width + 1
-      else
-        local width = c_win_width + anchor_width
-        anchor_width = anchor_width - (width - math.ceil(width / 2))
-      end
-    end
-    win:set_width(c_win_width + anchor_width)
-
-    local x = c_win_pos[1] + c_win_height + anchor_x
-    if vim.o.winbar == "" then
-      x = x - 1
-    end
-    local y = c_win_pos[2] + anchor_y
-    if not win:is_show() then
-      win:move(x, y)
-      win:show()
-    elseif x == win:x() and self.config.smooth then
-      if self.config.exponential_smoothing then
-        win:smooth_move_y_exp(win:y(), y)
-      else
-        win:smooth_move_y(win:y(), y)
-      end
-    else
-      win:move(x, y)
-    end
-  else
-    self.wins[direction.bottom]:hide()
-  end
+    sep:move(anchor_row, anchor_col)
 end
 
-function M:hide()
-  for _, line in pairs(self.wins) do
-    line:hide()
-  end
+---@param only_2wins boolean we should deal with 2 windows situation
+function M.render_up(only_2wins)
+    local sep_width = fn.winwidth(0)
+    local anchor_row = -1
+    local anchor_col = 0
+    local sep = M.separators.up
+    sep.start_symbol = config.opts.border[1]
+    sep.body_symbol = config.opts.border[1]
+    sep.end_symbol = config.opts.border[1]
+
+    if utils.has_winbar() then
+        anchor_row = anchor_row - 1
+    end
+
+    if utils.has_adjacent_win(directions.right) then
+        sep.end_symbol = config.opts.border[4]
+        sep_width = sep_width + 1
+    end
+
+    if only_2wins then
+        anchor_col = sep_width - math.ceil(sep_width / 2)
+        sep_width = math.ceil(sep_width / 2)
+        if config.opts.indicator_for_2wins.position == "center" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_up
+        elseif config.opts.indicator_for_2wins.position == "start" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_up
+        elseif config.opts.indicator_for_2wins.position == "end" then
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_up
+        elseif config.opts.indicator_for_2wins.position == "both" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_up
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_up
+        end
+    end
+
+    sep:horizontal_init(sep_width)
+    if not sep._show then
+        sep:show()
+    end
+    sep:move(anchor_row, anchor_col)
+end
+
+---@param only_2wins boolean we should deal with 2 windows situation
+function M.render_right(only_2wins)
+    local sep_height = fn.winheight(0)
+    local anchor_row = 0
+    local anchor_col = fn.winwidth(0)
+    local sep = M.separators.right
+    sep.start_symbol = config.opts.border[2]
+    sep.body_symbol = config.opts.border[2]
+    sep.end_symbol = config.opts.border[2]
+
+    if utils.has_winbar() then
+        sep_height = sep_height + 1
+        anchor_row = anchor_row - 1
+    end
+
+    if only_2wins then
+        sep_height = math.ceil(sep_height / 2)
+        if config.opts.indicator_for_2wins.position == "center" then
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_right
+        elseif config.opts.indicator_for_2wins.position == "start" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_right
+        elseif config.opts.indicator_for_2wins.position == "end" then
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_right
+        elseif config.opts.indicator_for_2wins.position == "both" then
+            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_right
+            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_right
+        end
+    end
+
+    sep:vertical_init(sep_height)
+    if not sep._show then
+        sep:show()
+    end
+    sep:move(anchor_row, anchor_col)
+end
+
+--- the order of rendering a full set of separators:  left -> down -> up -> right (i.e. hjlkl)
+function M.render()
+    local only_2wins = (utils.count_windows() == 2) and true or false
+    if utils.has_adjacent_win(directions.left) then
+        M.render_left(only_2wins)
+    else
+        M.separators.left:hide()
+    end
+    if utils.has_adjacent_win(directions.down) then
+        M.render_down(only_2wins)
+    else
+        M.separators.down:hide()
+    end
+    if utils.has_adjacent_win(directions.up) then
+        M.render_up(only_2wins)
+    else
+        M.separators.up:hide()
+    end
+    if utils.has_adjacent_win(directions.right) then
+        M.render_right(only_2wins)
+    else
+        M.separators.right:hide()
+    end
+end
+
+function M.hide_all()
+    for _, sep in pairs(M.separators) do
+        sep:hide()
+    end
 end
 
 return M
