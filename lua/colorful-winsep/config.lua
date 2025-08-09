@@ -12,6 +12,10 @@ M.opts = {
             smooth_speed = 1,
             delay = 3,
         },
+        progressive_1 = {
+            vertical_delay = 20,
+            horizontal_delay = 2,
+        },
     },
     indicator_for_2wins = {
         -- only work when the total of windows is two

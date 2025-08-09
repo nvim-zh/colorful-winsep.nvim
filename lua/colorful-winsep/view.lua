@@ -191,6 +191,55 @@ function M.render_right(only_2wins)
     end
 end
 
+local function progressive_animate(type)
+    api.nvim_set_hl(0, "ColorfulWinSepAnimate", config.opts.highlight)
+    api.nvim_set_hl(0, "ColorfulWinSep", { link = "WinSeparator" })
+
+    if type == 1 then
+        local animate_config = config.opts.animate.progressive_1
+        for dir, sep in pairs(M.separators) do
+            if not sep.timer:is_closing() then
+                sep.timer:stop()
+                sep.timer:close()
+            end
+            sep.timer = vim.uv.new_timer()
+
+            local position = 0
+            if dir == "left" or dir == "right" then
+                sep.timer:start(
+                    1,
+                    animate_config.vertical_delay,
+                    vim.schedule_wrap(function()
+                        if sep._show then
+                            position = position + 1
+                            utils.color(sep.buffer, position, 1)
+                        end
+                        if position == sep.window.height and not sep.timer:is_closing() then
+                            sep.timer:stop()
+                            sep.timer:close()
+                        end
+                    end)
+                )
+            else
+                sep.timer:start(
+                    1,
+                    animate_config.horizontal_delay,
+                    vim.schedule_wrap(function()
+                        if sep._show then
+                            position = position + 1
+                            utils.color(sep.buffer, 1, position)
+                        end
+                        if position == sep.window.width * 3 and not sep.timer:is_closing() then
+                            sep.timer:stop()
+                            sep.timer:close()
+                        end
+                    end)
+                )
+            end
+        end
+    end
+end
+
 --- the order of rendering a full set of separators:  left -> down -> up -> right (i.e. hjlkl)
 function M.render()
     local only_2wins = (utils.count_windows() == 2) and true or false
@@ -213,6 +262,10 @@ function M.render()
         M.render_right(only_2wins)
     else
         M.separators.right:hide()
+    end
+
+    if config.opts.animate.enabled == "progressive_1" then
+        progressive_animate(1)
     end
 end
 

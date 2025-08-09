@@ -1,6 +1,8 @@
 local fn = vim.fn
 local M = {}
 
+local ns_id = vim.api.nvim_create_namespace("colorful-winsep")
+
 M.directions = { left = "h", down = "j", up = "k", right = "l" }
 
 --- check if there is adjacent window in specified direction
@@ -30,6 +32,15 @@ function M.count_windows()
         end
     end
     return win_len
+end
+
+function M.color(buf, line, col)
+    -- set extmark for the character (line/col are 0-indexed)
+    vim.api.nvim_buf_set_extmark(buf, ns_id, line - 1, col - 1, {
+        end_col = col, -- exclusive
+        hl_group = "ColorfulWinSepAnimate",
+        hl_eol = false, -- do not highlight beyond EOL
+    })
 end
 
 ---@param a integer
