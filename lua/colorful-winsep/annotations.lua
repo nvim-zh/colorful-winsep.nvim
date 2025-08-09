@@ -3,7 +3,7 @@
 ---@field body_symbol string
 ---@field end_symbol string
 ---@field buffer integer
----@field win integer|nil
----@field config { style: string, border: string, relative: string, zindex: integer, focusable: boolean, height: integer, width: integer, row: integer, col: integer }
+---@field winid integer|nil
+---@field window { style: string, border: string, relative: string, zindex: integer, focusable: boolean, height: integer, width: integer, row: integer, col: integer }
 ---@field extmarks table
 ---@field _show boolean

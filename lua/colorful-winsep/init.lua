@@ -72,15 +72,15 @@ function M.setup(user_opts)
         end,
     })
 
-    vim.api.nvim_create_autocmd({ "WinLeave" }, {
-        group = auto_group,
-        callback = function()
-            if not M.enabled then
-                return
-            end
-            view.hide_all()
-        end,
-    })
+    -- vim.api.nvim_create_autocmd({ "WinLeave" }, {
+    --     group = auto_group,
+    --     callback = function()
+    --         if not M.enabled then
+    --             return
+    --         end
+    --         view.hide_all()
+    --     end,
+    -- })
     -- for some cases that close the separators windows(fail to trigger the WinLeave event), like `:only` command
     for _, sep in pairs(view.separators) do
         vim.api.nvim_create_autocmd({ "BufHidden" }, {

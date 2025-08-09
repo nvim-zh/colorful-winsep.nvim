@@ -1,6 +1,7 @@
 local Separator = require("colorful-winsep.separator")
 local config = require("colorful-winsep.config")
 local utils = require("colorful-winsep.utils")
+local api = vim.api
 local fn = vim.fn
 local directions = utils.directions
 
@@ -15,8 +16,9 @@ M.separators = {
 ---@param only_2wins boolean we should deal with 2 windows situation
 function M.render_left(only_2wins)
     local sep_height = fn.winheight(0)
-    local anchor_row = 0
-    local anchor_col = -1
+    local current_row, current_col = unpack(api.nvim_win_get_position(0))
+    local anchor_row = current_row
+    local anchor_col = current_col - 1
     local sep = M.separators.left
     sep.start_symbol = config.opts.border[2]
     sep.body_symbol = config.opts.border[2]
@@ -24,7 +26,6 @@ function M.render_left(only_2wins)
 
     if utils.has_winbar() then
         sep_height = sep_height + 1
-        anchor_row = anchor_row - 1
     end
 
     if utils.has_adjacent_win(directions.up) then
@@ -40,9 +41,6 @@ function M.render_left(only_2wins)
     if only_2wins then
         anchor_row = sep_height - math.ceil(sep_height / 2)
         sep_height = math.ceil(sep_height / 2)
-        if utils.has_winbar() then
-            anchor_row = anchor_row - 1
-        end
         if config.opts.indicator_for_2wins.position == "center" then
             sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_left
         elseif config.opts.indicator_for_2wins.position == "start" then
@@ -57,20 +55,29 @@ function M.render_left(only_2wins)
 
     sep:vertical_init(sep_height)
     if not sep._show then
+        sep:move(anchor_row, anchor_col)
         sep:show()
+    elseif config.opts.animate.enabled == "shift" then
+        sep:shift_move(anchor_row, anchor_col)
+    else
+        sep:move(anchor_row, anchor_col)
     end
-    sep:move(anchor_row, anchor_col)
 end
 
 ---@param only_2wins boolean we should deal with 2 windows situation
 function M.render_down(only_2wins)
     local sep_width = fn.winwidth(0)
-    local anchor_row = fn.winheight(0)
-    local anchor_col = 0
+    local current_row, current_col = unpack(api.nvim_win_get_position(0))
+    local anchor_row = current_row + fn.winheight(0)
+    local anchor_col = current_col
     local sep = M.separators.down
     sep.start_symbol = config.opts.border[1]
     sep.body_symbol = config.opts.border[1]
     sep.end_symbol = config.opts.border[1]
+
+    if utils.has_winbar() then
+        anchor_row = anchor_row + 1
+    end
 
     if utils.has_adjacent_win(directions.right) then
         sep.end_symbol = config.opts.border[6]
@@ -93,24 +100,25 @@ function M.render_down(only_2wins)
 
     sep:horizontal_init(sep_width)
     if not sep._show then
+        sep:move(anchor_row, anchor_col)
         sep:show()
+    elseif config.opts.animate.enabled == "shift" then
+        sep:shift_move(anchor_row, anchor_col)
+    else
+        sep:move(anchor_row, anchor_col)
     end
-    sep:move(anchor_row, anchor_col)
 end
 
 ---@param only_2wins boolean we should deal with 2 windows situation
 function M.render_up(only_2wins)
     local sep_width = fn.winwidth(0)
-    local anchor_row = -1
-    local anchor_col = 0
+    local current_row, current_col = unpack(api.nvim_win_get_position(0))
+    local anchor_row = current_row - 1
+    local anchor_col = current_col
     local sep = M.separators.up
     sep.start_symbol = config.opts.border[1]
     sep.body_symbol = config.opts.border[1]
     sep.end_symbol = config.opts.border[1]
-
-    if utils.has_winbar() then
-        anchor_row = anchor_row - 1
-    end
 
     if utils.has_adjacent_win(directions.right) then
         sep.end_symbol = config.opts.border[4]
@@ -134,16 +142,21 @@ function M.render_up(only_2wins)
 
     sep:horizontal_init(sep_width)
     if not sep._show then
+        sep:move(anchor_row, anchor_col)
         sep:show()
+    elseif config.opts.animate.enabled == "shift" then
+        sep:shift_move(anchor_row, anchor_col)
+    else
+        sep:move(anchor_row, anchor_col)
     end
-    sep:move(anchor_row, anchor_col)
 end
 
 ---@param only_2wins boolean we should deal with 2 windows situation
 function M.render_right(only_2wins)
     local sep_height = fn.winheight(0)
-    local anchor_row = 0
-    local anchor_col = fn.winwidth(0)
+    local current_row, current_col = unpack(api.nvim_win_get_position(0))
+    local anchor_row = current_row
+    local anchor_col = current_col + fn.winwidth(0)
     local sep = M.separators.right
     sep.start_symbol = config.opts.border[2]
     sep.body_symbol = config.opts.border[2]
@@ -151,7 +164,6 @@ function M.render_right(only_2wins)
 
     if utils.has_winbar() then
         sep_height = sep_height + 1
-        anchor_row = anchor_row - 1
     end
 
     if only_2wins then
@@ -170,9 +182,13 @@ function M.render_right(only_2wins)
 
     sep:vertical_init(sep_height)
     if not sep._show then
+        sep:move(anchor_row, anchor_col)
         sep:show()
+    elseif config.opts.animate.enabled == "shift" then
+        sep:shift_move(anchor_row, anchor_col)
+    else
+        sep:move(anchor_row, anchor_col)
     end
-    sep:move(anchor_row, anchor_col)
 end
 
 --- the order of rendering a full set of separators:  left -> down -> up -> right (i.e. hjlkl)
