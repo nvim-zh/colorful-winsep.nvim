@@ -1,4 +1,5 @@
 local utils = require("colorful-winsep.utils")
+local config = require("colorful-winsep.config")
 local api = vim.api
 local uv = vim.uv
 
@@ -91,30 +92,22 @@ function Separator:shift_move(row, col)
         self.timer = vim.loop.new_timer()
     end
 
-    local delta_time = 0.1 -- Default delta time
-    local smooth_speed = 1 -- Default smoothing speed
-
+    local animate_config = config.opts.animate.shift
     self.timer:start(
         0,
-        3,
+        animate_config.delay,
         vim.schedule_wrap(function()
             -- calculate exponential decay
-            local decay_factor = math.exp(-smooth_speed * delta_time)
+            local decay_factor = math.exp(-animate_config.smooth_speed * animate_config.delta_time)
 
-            -- if c_row > row then
-            --     c_row = math.max(row, c_row - 1)
-            -- elseif c_row < row then
-            --     c_row = math.min(row, c_row + 1)
-            -- end
-
-            -- Perform linear interpolation
+            -- perform linear interpolation
             current_row = utils.lerp(row, current_row, decay_factor)
             current_col = utils.lerp(col, current_col, decay_factor)
 
-            -- Update line position
+            -- update line position
             self:move(math.floor(current_row + 0.5), math.floor(current_col + 0.5)) -- round
 
-            -- Check if position is close enough to the target
+            -- check if position is close enough to the target
             if math.abs(current_row - row) < 0.5 and math.abs(current_col - col) < 0.5 then
                 if not self.timer:is_closing() then
                     self.timer:stop()

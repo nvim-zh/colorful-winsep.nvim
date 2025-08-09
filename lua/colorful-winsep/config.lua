@@ -6,8 +6,12 @@ M.opts = {
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
     highlight = { fg = "#957CC6", bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg },
     animate = {
-        enabled = "shift", -- choose a option among bellow choices and set option for it if needed
-        shift = {},
+        enabled = false, -- choose a option below (e.g. "shift") and set option for it if needed
+        shift = {
+            delta_time = 0.1,
+            smooth_speed = 1,
+            delay = 3,
+        },
     },
     indicator_for_2wins = {
         -- only work when the total of windows is two
