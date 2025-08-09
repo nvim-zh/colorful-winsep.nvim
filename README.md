@@ -86,7 +86,7 @@ The user command of the plugin is `Winsep`, and here comes the subcommands of it
 | ---------- | :-------------:    |
 | enable     | enable the plugin  |
 | disable    | disable the plugin |
-| toggele    | toggele the plugin |
+| toggle     | toggle the plugin  |
 
 ## Highlights
 The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin function or changing the plugin's configuration
