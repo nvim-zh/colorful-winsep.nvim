@@ -212,7 +212,11 @@ local function progressive_animate(type)
                     vim.schedule_wrap(function()
                         if sep._show then
                             position = position + 1
-                            utils.color(sep.buffer, position, 1)
+                            if dir == "right" then
+                                utils.color(sep.buffer, sep.window.height - position + 1, 1)
+                            else
+                                utils.color(sep.buffer, position, 1)
+                            end
                         end
                         if position == sep.window.height and not sep.timer:is_closing() then
                             sep.timer:stop()
@@ -227,7 +231,11 @@ local function progressive_animate(type)
                     vim.schedule_wrap(function()
                         if sep._show then
                             position = position + 1
-                            utils.color(sep.buffer, 1, position)
+                            if dir == "down" then
+                                utils.color(sep.buffer, 1, sep.window.width * 3 - position + 1)
+                            else
+                                utils.color(sep.buffer, 1, position)
+                            end
                         end
                         if position == sep.window.width * 3 and not sep.timer:is_closing() then
                             sep.timer:stop()
