@@ -114,7 +114,6 @@ The user command of the plugin is `Winsep`, and here comes the subcommands of it
 The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin function or changing the plugin's configuration
 
 ## TODO
-- [ ] smooth animation
 - [ ] add marquee
 
 ## License
