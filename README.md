@@ -60,6 +60,11 @@ require("colorful-winsep").setup({
             smooth_speed = 1,
             delay = 3,
         },
+        progressive = {
+            -- animation's speed for different direction
+            vertical_delay = 20,
+            horizontal_delay = 2,
+        },
     },
     indicator_for_2wins = {
         -- only work when the total of windows is two
@@ -84,6 +89,10 @@ By default, all animates are disabled to improve the perfomance and relax our ey
 
 #### shift
 Have a look at the top of this README
+
+#### progressive
+
+https://github.com/user-attachments/assets/4cc29832-ed46-44ec-80db-0f1da350deeb
 
 ### indicator_for_2wins
 When using the plugin with two windows only, it becomes difficult to discern which window is currently active. With this feature we can identify the active window more easily. To enable it, set the `indicator_for_2wins.position` to a available option (`center` is recommended). Here come the showcases:
