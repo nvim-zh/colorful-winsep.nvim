@@ -87,10 +87,8 @@ function Separator:shift_move(row, col)
     if not self.timer:is_closing() then
         self.timer:stop()
         self.timer:close()
-        self.timer = vim.loop.new_timer()
-    else
-        self.timer = vim.loop.new_timer()
     end
+    self.timer = vim.uv.new_timer()
 
     local animate_config = config.opts.animate.shift
     self.timer:start(

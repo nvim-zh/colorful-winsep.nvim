@@ -12,7 +12,8 @@ M.opts = {
             smooth_speed = 1,
             delay = 3,
         },
-        progressive_1 = {
+        progressive = {
+            -- animation's speed for different direction
             vertical_delay = 20,
             horizontal_delay = 2,
         },

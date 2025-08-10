@@ -191,59 +191,78 @@ function M.render_right(only_2wins)
     end
 end
 
-local function progressive_animate(type)
-    api.nvim_set_hl(0, "ColorfulWinSepAnimate", config.opts.highlight)
+--- draw the progressive animation
+---@param separator Separator
+---@param animate_config table
+---@param reverse boolean
+local function vertical_progressive(separator, animate_config, reverse)
+    local position = 0
+    if not separator.timer:is_closing() then
+        separator.timer:stop()
+        separator.timer:close()
+    end
+    separator.timer = vim.uv.new_timer()
+    separator.timer:start(
+        1,
+        animate_config.vertical_delay,
+        vim.schedule_wrap(function()
+            if separator._show then
+                position = position + 1
+                if reverse then
+                    utils.color(separator.buffer, separator.window.height - position + 1, 1)
+                else
+                    utils.color(separator.buffer, position, 1)
+                end
+            end
+            if position == separator.window.height and not separator.timer:is_closing() then
+                separator.timer:stop()
+                separator.timer:close()
+            end
+        end)
+    )
+end
+
+--- draw the progressive animation
+---@param separator Separator
+---@param animate_config table
+---@param reverse boolean
+local function horizontal_progressive(separator, animate_config, reverse)
+    local position = 0
+    if not separator.timer:is_closing() then
+        separator.timer:stop()
+        separator.timer:close()
+    end
+    separator.timer = vim.uv.new_timer()
+    separator.timer:start(
+        1,
+        animate_config.horizontal_delay,
+        vim.schedule_wrap(function()
+            if separator._show then
+                position = position + 1
+                if reverse then
+                    utils.color(separator.buffer, 1, separator.window.width * 3 - position + 1)
+                else
+                    utils.color(separator.buffer, 1, position)
+                end
+            end
+            if position == separator.window.width * 3 and not separator.timer:is_closing() then
+                separator.timer:stop()
+                separator.timer:close()
+            end
+        end)
+    )
+end
+
+local function progressive_animate()
     api.nvim_set_hl(0, "ColorfulWinSep", { link = "WinSeparator" })
+    api.nvim_set_hl(0, "ColorfulWinSepAnimate", config.opts.highlight)
 
-    if type == 1 then
-        local animate_config = config.opts.animate.progressive_1
-        for dir, sep in pairs(M.separators) do
-            if not sep.timer:is_closing() then
-                sep.timer:stop()
-                sep.timer:close()
-            end
-            sep.timer = vim.uv.new_timer()
-
-            local position = 0
-            if dir == "left" or dir == "right" then
-                sep.timer:start(
-                    1,
-                    animate_config.vertical_delay,
-                    vim.schedule_wrap(function()
-                        if sep._show then
-                            position = position + 1
-                            if dir == "right" then
-                                utils.color(sep.buffer, sep.window.height - position + 1, 1)
-                            else
-                                utils.color(sep.buffer, position, 1)
-                            end
-                        end
-                        if position == sep.window.height and not sep.timer:is_closing() then
-                            sep.timer:stop()
-                            sep.timer:close()
-                        end
-                    end)
-                )
-            else
-                sep.timer:start(
-                    1,
-                    animate_config.horizontal_delay,
-                    vim.schedule_wrap(function()
-                        if sep._show then
-                            position = position + 1
-                            if dir == "down" then
-                                utils.color(sep.buffer, 1, sep.window.width * 3 - position + 1)
-                            else
-                                utils.color(sep.buffer, 1, position)
-                            end
-                        end
-                        if position == sep.window.width * 3 and not sep.timer:is_closing() then
-                            sep.timer:stop()
-                            sep.timer:close()
-                        end
-                    end)
-                )
-            end
+    local animate_config = config.opts.animate.progressive
+    for dir, sep in pairs(M.separators) do
+        if dir == "left" or dir == "right" then
+            vertical_progressive(sep, animate_config, dir == "right")
+        else
+            horizontal_progressive(sep, animate_config, dir == "down")
         end
     end
 end
@@ -272,8 +291,8 @@ function M.render()
         M.separators.right:hide()
     end
 
-    if config.opts.animate.enabled == "progressive_1" then
-        progressive_animate(1)
+    if config.opts.animate.enabled == "progressive" then
+        progressive_animate()
     end
 end
 
