@@ -2,7 +2,7 @@ name: vimdoc
 
 on:
   push:
-    branches: [main, alpha]
+    branches: [main]
 
 jobs:
   generate-docs:
