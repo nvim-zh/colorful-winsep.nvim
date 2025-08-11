@@ -118,11 +118,16 @@ end
 
 --- show the separator window
 function Separator:show()
-    if vim.api.nvim_buf_is_valid(self.buffer) then
-        local win = api.nvim_open_win(self.buffer, false, self.window)
-        api.nvim_set_option_value("winhl", "Normal:ColorfulWinSep", { win = win })
-        self.winid = win
-        self._show = true
+    if api.nvim_buf_is_valid(self.buffer) then
+        vim.schedule(function()
+            if not api.nvim_buf_is_valid(self.buffer) then
+                return
+            end
+            local win = api.nvim_open_win(self.buffer, false, self.window)
+            api.nvim_set_option_value("winhl", "Normal:ColorfulWinSep", { win = win })
+            self.winid = win
+            self._show = true
+        end)
     end
 end
 
