@@ -6,7 +6,7 @@ M.opts = {
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
     highlight = { fg = "#957CC6", bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg },
     animate = {
-        enabled = false, -- choose a option below (e.g. "shift") and set option for it if needed
+        enabled = "shift", -- false to disable or choose a option below (e.g. "shift") and set option for it if needed
         shift = {
             delta_time = 0.1,
             smooth_speed = 1,
@@ -20,7 +20,7 @@ M.opts = {
     },
     indicator_for_2wins = {
         -- only work when the total of windows is two
-        position = nil, -- nil to disable or choose between "center", "start", "end" and "both"
+        position = "center", -- false to disable or choose between "center", "start", "end" and "both"
         symbols = {
             -- the meaning of left, down ,up, right is the position of separator
             start_left = "󱞬",

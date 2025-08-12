@@ -54,7 +54,7 @@ require("colorful-winsep").setup({
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
     highlight = { fg = "#957CC6", bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg },
     animate = {
-        enabled = false, -- choose a option below (e.g. "shift") and set option for it if needed
+        enabled = "shift", -- false to disable, or choose a option below (e.g. "shift") and set option for it if needed
         shift = {
             delta_time = 0.1,
             smooth_speed = 1,
@@ -68,7 +68,7 @@ require("colorful-winsep").setup({
     },
     indicator_for_2wins = {
         -- only work when the total of windows is two
-        position = nil, -- nil to disable or choose between "center", "start", "end" and "both"
+        position = "center", -- false to disable or choose between "center", "start", "end" and "both"
         symbols = {
             -- the meaning of left, down ,up, right is the position of separator
             start_left = "󱞬",
@@ -85,7 +85,7 @@ require("colorful-winsep").setup({
 ```
 
 ### animate
-By default, all animates are disabled to improve the perfomance and relax our eyes. You should enable it manually if needed.
+By default, we use the `shift` animation. If you want to disable it, set the `animate.enabled` to false.
 
 #### shift
 Have a look at the top of this README
@@ -95,7 +95,7 @@ Have a look at the top of this README
 https://github.com/user-attachments/assets/4cc29832-ed46-44ec-80db-0f1da350deeb
 
 ### indicator_for_2wins
-When using the plugin with two windows only, it becomes difficult to discern which window is currently active. With this feature we can identify the active window more easily. To enable it, set the `indicator_for_2wins.position` to a available option (`center` is recommended). Here come the showcases:
+When using the plugin with two windows only, it becomes difficult to discern which window is currently active. With this feature we can identify the active window more easily. To disable it, set the `indicator_for_2wins.position` to false. Here come the showcases of default `center` option:
 
 <img width="1082" height="765" alt="Image" src="https://github.com/user-attachments/assets/f4779ad8-259a-4367-b922-3db154c6ad8e" />
 
