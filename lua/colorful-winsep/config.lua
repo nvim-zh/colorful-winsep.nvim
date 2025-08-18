@@ -55,6 +55,8 @@ function M.merge_config(user_opts)
             ---@diagnostic disable-next-line: assign-type-mismatch
             vim.api.nvim_set_hl(0, "ColorfulWinSep", { fg = fg, bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg })
         end
+    elseif type(M.opts.highlight) == "table" then
+        vim.notify("Colorful-winsep: highlight field don't support table now, check the docs!", vim.log.levels.ERROR)
     end
 end
 
