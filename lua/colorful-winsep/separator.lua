@@ -120,9 +120,13 @@ end
 function Separator:show()
     if vim.api.nvim_buf_is_valid(self.buffer) then
         local win = api.nvim_open_win(self.buffer, false, self.window)
-        api.nvim_set_option_value("winhl", "Normal:ColorfulWinSep", { win = win })
         self.winid = win
         self._show = true
+        if config.opts.animate.enabled ~= "progressive" then
+            api.nvim_set_option_value("winhl", "Normal:ColorfulWinSep", { win = win })
+        else
+            api.nvim_set_option_value("winhl", "Normal:WinSeparator", { win = win })
+        end
     end
 end
 
