@@ -52,7 +52,7 @@ require("colorful-winsep").setup({
     -- Or pass a tbale like this: { "─", "│", "┌", "┐", "└", "┘" },
     border = "bold",
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
-    highlight = { fg = "#957CC6", bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg },
+    highlight = "#957CC6", -- string or function. See the docs's Highlights section
     animate = {
         enabled = "shift", -- false to disable, or choose a option below (e.g. "shift") and set option for it if needed
         shift = {
@@ -112,6 +112,10 @@ The user command of the plugin is `Winsep`, and here comes the subcommands of it
 
 ## Highlights
 The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin function or changing the plugin's configuration
+
+If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be linked to "Normal" highlight group automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the colorscheme is changed.
+
+If you don't want the plugin do anything about the highlight, you can pass a empty function to `highlight` field (namely `highlight = function() end`) then manipulate the `ColorfulWinSep` as you wish.
 
 ## TODO
 - [ ] add marquee
