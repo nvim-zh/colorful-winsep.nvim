@@ -4,14 +4,6 @@ local view = require("colorful-winsep.view")
 local M = {}
 M.enabled = true
 
-local function highlight()
-    -- always get fresh background color from current colorscheme
-    local fresh_highlight = vim.tbl_deep_extend("force", config.opts.highlight, {
-        bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg,
-    })
-    vim.api.nvim_set_hl(0, "ColorfulWinSep", fresh_highlight)
-end
-
 local function create_command()
     vim.api.nvim_create_user_command("Winsep", function(ctx)
         local subcommand = ctx.args
@@ -87,10 +79,10 @@ function M.setup(user_opts)
         })
     end
 
-    highlight()
-    vim.api.nvim_create_autocmd({ "ColorScheme", "ColorSchemePre" }, {
+    config.opts.highlight()
+    vim.api.nvim_create_autocmd({ "ColorScheme" }, {
         group = auto_group,
-        callback = highlight,
+        callback = config.opts.highlight,
     })
 end
 

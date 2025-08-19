@@ -254,9 +254,6 @@ local function horizontal_progressive(separator, animate_config, reverse)
 end
 
 local function progressive_animate()
-    api.nvim_set_hl(0, "ColorfulWinSep", { link = "WinSeparator" })
-    api.nvim_set_hl(0, "ColorfulWinSepAnimate", config.opts.highlight)
-
     local animate_config = config.opts.animate.progressive
     for dir, sep in pairs(M.separators) do
         if dir == "left" or dir == "right" then

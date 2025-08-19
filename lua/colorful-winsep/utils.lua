@@ -38,7 +38,7 @@ function M.color(buf, line, col)
     -- set extmark for the character (line/col are 0-indexed)
     vim.api.nvim_buf_set_extmark(buf, ns_id, line - 1, col - 1, {
         end_col = col, -- exclusive
-        hl_group = "ColorfulWinSepAnimate",
+        hl_group = "ColorfulWinSep",
         hl_eol = false, -- do not highlight beyond EOL
     })
 end

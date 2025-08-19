@@ -4,7 +4,7 @@ M.opts = {
     -- Or pass a tbale like this: { "─", "│", "┌", "┐", "└", "┘" },
     border = "bold",
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
-    highlight = { fg = "#957CC6", bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg },
+    highlight = "#957CC6", -- string or function. See the docs's Highlights section
     animate = {
         enabled = "shift", -- false to disable or choose a option below (e.g. "shift") and set option for it if needed
         shift = {
@@ -47,6 +47,16 @@ function M.merge_config(user_opts)
         M.opts.border = { "━", "┃", "┏", "┓", "┗", "┛" }
     elseif M.opts.border == "double" then
         M.opts.border = { "═", "║", "╔", "╗", "╚", "╝" }
+    end
+
+    if type(M.opts.highlight) == "string" then
+        local fg = M.opts.highlight
+        M.opts.highlight = function()
+            ---@diagnostic disable-next-line: assign-type-mismatch
+            vim.api.nvim_set_hl(0, "ColorfulWinSep", { fg = fg, bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg })
+        end
+    elseif type(M.opts.highlight) == "table" then
+        vim.notify("Colorful-winsep: highlight field don't support table now, check the docs!", vim.log.levels.ERROR)
     end
 end
 
