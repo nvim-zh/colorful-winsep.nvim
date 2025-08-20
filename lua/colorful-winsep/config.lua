@@ -1,7 +1,7 @@
 local M = {}
 M.opts = {
-    -- choose between "signle", "rounded", "bold" and "double".
-    -- Or pass a tbale like this: { "─", "│", "┌", "┐", "└", "┘" },
+    -- choose between "single", "rounded", "bold" and "double".
+    -- Or pass a table like this: { "─", "│", "┌", "┐", "└", "┘" },
     border = "bold",
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
     highlight = "#957CC6", -- string or function. See the docs's Highlights section

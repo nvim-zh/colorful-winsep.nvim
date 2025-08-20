@@ -48,8 +48,8 @@ Using lazy.nvim
 The following is the default configuration (read the comments carefully if you want to change it):
 ```lua
 require("colorful-winsep").setup({
-    -- choose between "signle", "rounded", "bold" and "double".
-    -- Or pass a tbale like this: { "─", "│", "┌", "┐", "└", "┘" },
+    -- choose between "single", "rounded", "bold" and "double".
+    -- Or pass a table like this: { "─", "│", "┌", "┐", "└", "┘" },
     border = "bold",
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
     highlight = "#957CC6", -- string or function. See the docs's Highlights section
