@@ -118,7 +118,7 @@ end
 
 --- show the separator window
 function Separator:show()
-    if vim.api.nvim_buf_is_valid(self.buffer) then
+    if api.nvim_buf_is_valid(self.buffer) then
         local win = api.nvim_open_win(self.buffer, false, self.window)
         self.winid = win
         self._show = true
