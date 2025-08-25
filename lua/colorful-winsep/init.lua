@@ -1,11 +1,12 @@
 local config = require("colorful-winsep.config")
 local view = require("colorful-winsep.view")
+local api = vim.api
 
 local M = {}
 M.enabled = true
 
 local function create_command()
-    vim.api.nvim_create_user_command("Winsep", function(ctx)
+    api.nvim_create_user_command("Winsep", function(ctx)
         local subcommand = ctx.args
         if subcommand == "enable" then
             M.enabled = true
@@ -41,8 +42,8 @@ function M.setup(user_opts)
 
     create_command()
 
-    local auto_group = vim.api.nvim_create_augroup("colorful_winsep", { clear = true })
-    vim.api.nvim_create_autocmd({ "WinEnter", "WinResized", "BufWinEnter" }, {
+    local auto_group = api.nvim_create_augroup("colorful_winsep", { clear = true })
+    api.nvim_create_autocmd({ "WinEnter", "WinResized", "BufWinEnter" }, {
         group = auto_group,
         callback = function(ctx)
             if not M.enabled then
@@ -52,7 +53,7 @@ function M.setup(user_opts)
             -- exclude floating windows
             local current_win = vim.fn.bufwinid(ctx.buf)
             if current_win ~= -1 then
-                local win_config = vim.api.nvim_win_get_config(current_win)
+                local win_config = api.nvim_win_get_config(current_win)
                 if win_config.relative ~= nil and win_config.relative ~= "" then
                     return
                 end
@@ -68,7 +69,7 @@ function M.setup(user_opts)
 
     -- for some cases that close the separators windows(fail to trigger the WinLeave event), like `:only` command
     for _, sep in pairs(view.separators) do
-        vim.api.nvim_create_autocmd({ "BufHidden" }, {
+        api.nvim_create_autocmd({ "BufHidden" }, {
             buffer = sep.buffer,
             callback = function()
                 if not M.enabled then
@@ -80,7 +81,7 @@ function M.setup(user_opts)
     end
 
     config.opts.highlight()
-    vim.api.nvim_create_autocmd({ "ColorScheme" }, {
+    api.nvim_create_autocmd({ "ColorScheme" }, {
         group = auto_group,
         callback = config.opts.highlight,
     })

@@ -51,7 +51,7 @@ function Separator:vertical_init(height)
         content[i] = self.body_symbol
     end
     content[height] = self.end_symbol
-    vim.api.nvim_buf_set_lines(self.buffer, 0, -1, false, content)
+    api.nvim_buf_set_lines(self.buffer, 0, -1, false, content)
 end
 
 --- horizontally initialize the separator window and buffer
@@ -60,7 +60,7 @@ function Separator:horizontal_init(width)
     self.window.height = 1
     self.window.width = width
     local content = { self.start_symbol .. string.rep(self.body_symbol, width - 2) .. self.end_symbol }
-    vim.api.nvim_buf_set_lines(self.buffer, 0, -1, false, content)
+    api.nvim_buf_set_lines(self.buffer, 0, -1, false, content)
 end
 
 --- reload the separator window config immediately
@@ -118,7 +118,7 @@ end
 
 --- show the separator window
 function Separator:show()
-    if vim.api.nvim_buf_is_valid(self.buffer) then
+    if api.nvim_buf_is_valid(self.buffer) then
         local win = api.nvim_open_win(self.buffer, false, self.window)
         self.winid = win
         self._show = true
@@ -133,7 +133,7 @@ end
 --- hide the separator window
 function Separator:hide()
     if self.winid ~= nil and api.nvim_win_is_valid(self.winid) then
-        vim.api.nvim_win_hide(self.winid)
+        api.nvim_win_hide(self.winid)
         self.winid = nil
         self._show = false
     end
