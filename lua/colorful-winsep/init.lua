@@ -62,7 +62,7 @@ function M.setup(user_opts)
                 view.hide_all()
                 return
             end
-            view.render()
+            vim.schedule(view.render)
         end,
     })
 
