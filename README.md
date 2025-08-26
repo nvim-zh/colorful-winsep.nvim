@@ -115,7 +115,7 @@ The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin
 
 If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be linked to "Normal" highlight group automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the colorscheme is changed.
 
-If you don't want the plugin do anything about the highlight in certain situations, such as your colorscheme creates the highlights on its own (like catppuccin), you can pass a empty function to `highlight` field (namely `highlight = function() end`) then manipulate the `ColorfulWinSep` as you wish.
+If you don't want the plugin do anything about the highlight in certain situations, such as your colorscheme creates the highlights on its own (like catppuccin), you can pass `nil` to the highlight setting. (this is the default)
 
 ## TODO
 - [ ] add marquee
