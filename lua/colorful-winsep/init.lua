@@ -67,6 +67,16 @@ function M.setup(user_opts)
         end,
     })
 
+    -- after loading a session, the original buffers will be removed.
+    api.nvim_create_autocmd("SessionLoadPost", {
+        group = auto_group,
+        callback = function()
+            for _, sep in pairs(view.separators) do
+                sep.buffer = api.nvim_create_buf(false, true)
+            end
+        end,
+    })
+
     -- for some cases that close the separators windows(fail to trigger the WinLeave event), like `:only` command
     for _, sep in pairs(view.separators) do
         api.nvim_create_autocmd({ "BufHidden" }, {
