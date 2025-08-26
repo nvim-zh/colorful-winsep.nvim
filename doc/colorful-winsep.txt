@@ -1,4 +1,4 @@
-*colorful-winsep.txt*     For Neovim >= 0.11.3     Last change: 2025 August 20
+*colorful-winsep.txt*     For Neovim >= 0.11.3     Last change: 2025 August 27
 
 ==============================================================================
 Table of Contents                          *colorful-winsep-table-of-contents*
@@ -177,9 +177,8 @@ will be called when the plugin runs and every time the colorscheme is changed.
 
 If you don't want the plugin do anything about the highlight in certain
 situations, such as your colorscheme creates the highlights on its own (like
-catppuccin), you can pass a empty function to `highlight` field (namely
-`highlight = function() end`) then manipulate the `ColorfulWinSep` as you
-wish.
+catppuccin), you can pass `nil` to the highlight setting. (this is the
+default)
 
 
 ------------------------------------------------------------------------------
