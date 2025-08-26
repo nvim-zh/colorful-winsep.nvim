@@ -91,6 +91,12 @@ function M.setup(user_opts)
     end
 
     config.opts.highlight()
+    api.nvim_create_autocmd({ "ColorSchemePre" }, {
+        group = auto_group,
+        callback = function()
+            api.nvim_set_hl(0, "ColorfulWinSep", {})
+        end,
+    })
     api.nvim_create_autocmd({ "ColorScheme" }, {
         group = auto_group,
         callback = config.opts.highlight,
