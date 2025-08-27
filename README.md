@@ -52,7 +52,7 @@ require("colorful-winsep").setup({
     -- Or pass a table like this: { "─", "│", "┌", "┐", "└", "┘" },
     border = "bold",
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
-    highlight = "#957CC6", -- string or function. See the docs's Highlights section
+    highlight = nil, -- nil|string|function. See the docs's Highlights section
     animate = {
         enabled = "shift", -- false to disable, or choose a option below (e.g. "shift") and set option for it if needed
         shift = {
@@ -113,12 +113,9 @@ The user command of the plugin is `Winsep`, and here comes the subcommands of it
 ## Highlights
 The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin function or changing the plugin's configuration
 
-If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be linked to "Normal" highlight group automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the colorscheme is changed.
+If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be set up the same as "Normal" highlight group's bg automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the colorscheme is changed.
 
-If you don't want the plugin do anything about the highlight in certain situations, such as your colorscheme creates the highlights on its own (like catppuccin), you can pass `nil` to the highlight setting. (this is the default)
-
-## TODO
-- [ ] add marquee
+By default, the configuration's `highlight` field is `nil`. This means the plugin will do nothing if you set the highlight group before it loads. Otherwise, the highlight is set to `#957CC6`. This is useful if you use your colorscheme plugin (like catppuccin) to control highlights.
 
 ## License
 
