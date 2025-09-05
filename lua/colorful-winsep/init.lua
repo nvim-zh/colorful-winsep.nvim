@@ -67,12 +67,14 @@ function M.setup(user_opts)
         end,
     })
 
-    -- after loading a session, the original buffers will be removed.
+    -- after loading a session, any pre-existing buffers are removed
     api.nvim_create_autocmd("SessionLoadPost", {
         group = auto_group,
         callback = function()
             for _, sep in pairs(view.separators) do
-                sep.buffer = api.nvim_create_buf(false, true)
+                if not api.nvim_buf_is_valid(sep.buffer) then
+                    sep.buffer = api.nvim_create_buf(false, true)
+                end
             end
         end,
     })
