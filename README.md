@@ -1,7 +1,8 @@
 # colorful-winsep.nvim
 
-https://github.com/user-attachments/assets/6ea56aa3-b5fc-485b-bd62-2cfd162a7f78
 > configurable window separator
+
+https://github.com/user-attachments/assets/6ea56aa3-b5fc-485b-bd62-2cfd162a7f78
 
 ## Motivation
 
