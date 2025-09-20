@@ -114,9 +114,9 @@ The user command of the plugin is `Winsep`, and here comes the subcommands of it
 ## Highlights
 The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin function or changing the plugin's configuration
 
-If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be set up the same as "Normal" highlight group's bg automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the colorscheme is changed.
+If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be set up the same as "Normal" highlight group's bg automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the color scheme is changed.
 
-By default, the configuration's `highlight` field is `nil`. This means the plugin will do nothing if you set the highlight group before it loads. Otherwise, the highlight is set to `#957CC6`. This is useful if you use your colorscheme plugin (like catppuccin) to control highlights.
+By default, the configuration's `highlight` field is `nil`. This means the plugin will do nothing if you set the highlight group before it loads. Otherwise, the highlight is set to `#957CC6`. This is useful if you use your color scheme plugin (like catppuccin) to control highlights.
 
 ## License
 
