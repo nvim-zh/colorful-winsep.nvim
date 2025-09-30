@@ -1,4 +1,4 @@
-*colorful-winsep.txt*     For Neovim >= 0.11.3     Last change: 2025 August 27
+*colorful-winsep.txt*    For Neovim >= 0.11.3   Last change: 2025 September 30
 
 ==============================================================================
 Table of Contents                          *colorful-winsep-table-of-contents*
@@ -20,9 +20,9 @@ License ............................................ |colorful-winsep-license|
 COLORFUL-WINSEP.NVIM                    *colorful-winsep-colorful-winsep.nvim*
 
 
-https://github.com/user-attachments/assets/6ea56aa3-b5fc-485b-bd62-2cfd162a7f78
+  configurable window separator
 
-  configurable window separtor
+https://github.com/user-attachments/assets/6ea56aa3-b5fc-485b-bd62-2cfd162a7f78
 
 
 ------------------------------------------------------------------------------
@@ -172,13 +172,13 @@ If you want to change it through plugin's setup function, you can pass a
 string or function to the `highlight` field. When you pass a string, it will
 work as the fg, and the bg will be set up the same as "Normal" highlight
 group's bg automatically (see `:h hl-Normal`). When you pass a function, the
-function will be called when the plugin runs and every time the colorscheme is
-changed.
+function will be called when the plugin runs and every time the color scheme
+is changed.
 
 By default, the configuration's `highlight` field is `nil`. This means the
 plugin will do nothing if you set the highlight group before it loads.
 Otherwise, the highlight is set to `#957CC6`. This is useful if you use your
-colorscheme plugin (like catppuccin) to control highlights.
+color scheme plugin (like catppuccin) to control highlights.
 
 
 ------------------------------------------------------------------------------
