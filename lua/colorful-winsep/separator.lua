@@ -19,7 +19,6 @@ local Separator = {}
 function Separator:new()
     local buf = api.nvim_create_buf(false, true)
     api.nvim_set_option_value("buftype", "nofile", { buf = buf })
-    api.nvim_set_option_value("filetype", "colorful-winsep", { buf = buf })
 
     local o = {
         start_symbol = "",
