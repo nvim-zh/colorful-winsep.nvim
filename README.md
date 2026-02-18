@@ -105,11 +105,11 @@ When using the plugin with two windows only, it becomes difficult to discern whi
 
 ## Commands
 The user command of the plugin is `Winsep`, and here comes the subcommands of it:
-| subcommand | function           |
-| ---------- | :-------------:    |
-| enable     | enable the plugin  |
-| disable    | disable the plugin |
-| toggle     | toggle the plugin  |
+| subcommand | lua call                             | function           |
+| ---------- | -------------                        | :-------------:    |
+| enable     | require("colorful-winsep").enable()  | enable the plugin  |
+| disable    | require("colorful-winsep").disable() | disable the plugin |
+| toggle     | require("colorful-winsep").toggle()  | toggle the plugin  |
 
 ## Highlights
 The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin function or changing the plugin's configuration
