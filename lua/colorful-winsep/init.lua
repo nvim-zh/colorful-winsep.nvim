@@ -5,23 +5,33 @@ local api = vim.api
 local M = {}
 M.enabled = true
 
+function M.enable()
+    M.enabled = true
+    view.render()
+end
+
+function M.disable()
+    M.enabled = false
+    view.hide_all()
+end
+
+function M.toggle()
+    if M.enabled then
+        M.disable()
+    else
+        M.enable()
+    end
+end
+
 local function create_command()
     api.nvim_create_user_command("Winsep", function(ctx)
         local subcommand = ctx.args
         if subcommand == "enable" then
-            M.enabled = true
-            view.render()
+            M.enable()
         elseif subcommand == "disable" then
-            M.enabled = false
-            view.hide_all()
+            M.disable()
         elseif subcommand == "toggle" then
-            if M.enabled then
-                M.enabled = false
-                view.hide_all()
-            else
-                M.enabled = true
-                view.render()
-            end
+            M.toggle()
         else
             vim.notify("Colorful-Winsep: no command " .. ctx.args)
         end
