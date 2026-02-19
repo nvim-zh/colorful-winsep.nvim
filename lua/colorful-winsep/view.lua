@@ -62,6 +62,9 @@ function M.render_left(only_2wins)
     else
         sep:move(anchor_row, anchor_col)
     end
+    if config.opts.animate.enabled == "progressive" then
+        sep:progressive_animate_vertical()
+    end
 end
 
 ---@param only_2wins boolean we should deal with 2 windows situation
@@ -107,6 +110,9 @@ function M.render_down(only_2wins)
     else
         sep:move(anchor_row, anchor_col)
     end
+    if config.opts.animate.enabled == "progressive" then
+        sep:progressive_animate_horizontal(true)
+    end
 end
 
 ---@param only_2wins boolean we should deal with 2 windows situation
@@ -149,6 +155,9 @@ function M.render_up(only_2wins)
     else
         sep:move(anchor_row, anchor_col)
     end
+    if config.opts.animate.enabled == "progressive" then
+        sep:progressive_animate_horizontal()
+    end
 end
 
 ---@param only_2wins boolean we should deal with 2 windows situation
@@ -189,78 +198,8 @@ function M.render_right(only_2wins)
     else
         sep:move(anchor_row, anchor_col)
     end
-end
-
---- draw the progressive animation
----@param separator Separator
----@param animate_config table
----@param reverse boolean
-local function vertical_progressive(separator, animate_config, reverse)
-    local position = 0
-    if not separator.timer:is_closing() then
-        separator.timer:stop()
-        separator.timer:close()
-    end
-    separator.timer = vim.uv.new_timer()
-    separator.timer:start(
-        1,
-        animate_config.vertical_delay,
-        vim.schedule_wrap(function()
-            if separator._show then
-                position = position + 1
-                if reverse then
-                    utils.color(separator.buffer, separator.window.height - position + 1, 1)
-                else
-                    utils.color(separator.buffer, position, 1)
-                end
-            end
-            if position == separator.window.height and not separator.timer:is_closing() then
-                separator.timer:stop()
-                separator.timer:close()
-            end
-        end)
-    )
-end
-
---- draw the progressive animation
----@param separator Separator
----@param animate_config table
----@param reverse boolean
-local function horizontal_progressive(separator, animate_config, reverse)
-    local position = 0
-    if not separator.timer:is_closing() then
-        separator.timer:stop()
-        separator.timer:close()
-    end
-    separator.timer = vim.uv.new_timer()
-    separator.timer:start(
-        1,
-        animate_config.horizontal_delay,
-        vim.schedule_wrap(function()
-            if separator._show then
-                position = position + 1
-                if reverse then
-                    utils.color(separator.buffer, 1, separator.window.width * 3 - position + 1)
-                else
-                    utils.color(separator.buffer, 1, position)
-                end
-            end
-            if position == separator.window.width * 3 and not separator.timer:is_closing() then
-                separator.timer:stop()
-                separator.timer:close()
-            end
-        end)
-    )
-end
-
-local function progressive_animate()
-    local animate_config = config.opts.animate.progressive
-    for dir, sep in pairs(M.separators) do
-        if dir == "left" or dir == "right" then
-            vertical_progressive(sep, animate_config, dir == "right")
-        else
-            horizontal_progressive(sep, animate_config, dir == "down")
-        end
+    if config.opts.animate.enabled == "progressive" then
+        sep:progressive_animate_vertical(true)
     end
 end
 
@@ -286,10 +225,6 @@ function M.render()
         M.render_right(only_2wins)
     else
         M.separators.right:hide()
-    end
-
-    if config.opts.animate.enabled == "progressive" then
-        progressive_animate()
     end
 end
 

@@ -34,21 +34,41 @@ function M.count_windows()
     return win_len
 end
 
-function M.color(buf, line, col)
-    -- set extmark for the character (line/col are 0-indexed)
-    vim.api.nvim_buf_set_extmark(buf, ns_id, line - 1, col - 1, {
-        end_col = col, -- exclusive
+--- color the character (1-indexed)
+---@param buf integer
+---@param start_row integer
+---@param start_col integer
+---@param end_row integer
+---@param end_col integer
+function M.color(buf, start_row, start_col, end_row, end_col)
+    vim.api.nvim_buf_set_extmark(buf, ns_id, start_row - 1, start_col - 1, {
+        end_row = end_row - 1,
+        end_col = end_col,
         hl_group = "ColorfulWinSep",
         hl_eol = false, -- do not highlight beyond EOL
     })
 end
 
----@param a integer
----@param b integer
+function M.clear_extmarks(buf)
+    if vim.api.nvim_buf_is_valid(buf) then
+        vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+    end
+end
+
+--- current + (target - current) * factor
+---@param current integer
+---@param target integer
+---@param factor integer
+---@return number
+function M.lerp(current, target, factor)
+    return current + (target - current) * factor
+end
+
+---- 1 - (1 - t)^3
 ---@param t integer
----@return integer
-function M.lerp(a, b, t)
-    return a + (b - a) * t
+---@return number
+function M.ease_out_cubic(t)
+    return 1 - math.pow(1 - t, 3)
 end
 
 return M
