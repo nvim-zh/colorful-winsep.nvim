@@ -50,21 +50,20 @@ The following is the default configuration (read the comments carefully if you w
 ```lua
 require("colorful-winsep").setup({
     -- choose between "single", "rounded", "bold" and "double".
-    -- Or pass a table like this: { "─", "│", "┌", "┐", "└", "┘" },
     border = "bold",
     excluded_ft = { "packer", "TelescopePrompt", "mason" },
     highlight = nil, -- nil|string|function. See the docs's Highlights section
     animate = {
-        enabled = "shift", -- false to disable, or choose a option below (e.g. "shift") and set option for it if needed
+        ---@type "shift"|"progressive"|false
+        enabled = "shift", -- false to disable or choose a option below (e.g. "shift") and set option for it if needed
         shift = {
-            delta_time = 0.1,
-            smooth_speed = 1,
-            delay = 3,
+            delay = 16, -- about 60fps
+            frames = 15, -- how many frames are required to complete the animation
         },
         progressive = {
-            -- animation's speed for different direction
-            vertical_delay = 20,
-            horizontal_delay = 2,
+            delay = 16,
+            vertical_lerp_factor = 0.15, -- between 0 and 1
+            horizontal_lerp_factor = 0.15, -- between 0 and 1
         },
     },
     indicator_for_2wins = {
