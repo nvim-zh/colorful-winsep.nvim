@@ -134,6 +134,10 @@ require("colorful-winsep").setup({
 })
 ```
 
+
+https://github.com/user-attachments/assets/b42d8fd0-5611-44df-853c-1656b5d8f3bd
+
+
 ## Node Interceptor (Advanced)
 We represent the border as a circular linked list model (Left -> Top -> Right -> Bottom). You can intercept each node (character point) before it is rendered to apply highly custom styling or characters by providing a `create_node_hook` function.
 
