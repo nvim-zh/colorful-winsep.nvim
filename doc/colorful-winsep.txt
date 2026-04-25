@@ -1,4 +1,4 @@
-*colorful-winsep.txt*    For Neovim >= 0.11.3    Last change: 2026 February 19
+*colorful-winsep.txt*      For Neovim >= 0.11.3     Last change: 2026 April 25
 
 ==============================================================================
 Table of Contents                          *colorful-winsep-table-of-contents*
@@ -14,6 +14,8 @@ progressive .................................... |colorful-winsep-progressive|
 indicator_for_2wins .................... |colorful-winsep-indicator_for_2wins|
 Commands .......................................... |colorful-winsep-commands|
 Highlights ...................................... |colorful-winsep-highlights|
+Multi-color Marquee Effect (Local Addition)  |colorful-winsep-multi-color-marquee-effect-(local-addition)|
+Node Interceptor (Advanced) .... |colorful-winsep-node-interceptor-(advanced)|
 License ............................................ |colorful-winsep-license|
 
 ==============================================================================
@@ -93,6 +95,7 @@ want to change it):
             shift = {
                 delay = 16, -- about 60fps
                 frames = 15, -- how many frames are required to complete the animation
+                easing = "ease_out_cubic", -- available algorithms: linear, ease_out_cubic, ease_in_out_sine, ease_out_quad, ease_out_expo
             },
             progressive = {
                 delay = 16,
@@ -115,6 +118,7 @@ want to change it):
                 end_right = "󱞦",
             },
         },
+        colors = {}, -- Add a custom color array. Single color applies statically, multiple colors will create a marquee effect.
     })
 <
 
@@ -179,6 +183,79 @@ plugin will do nothing if you set the highlight group before it loads.
 Otherwise, the highlight is set to `#957CC6`. This is useful if you use your
 color scheme plugin (like catppuccin) to control highlights.
 
+
+------------------------------------------------------------------------------
+MULTI-COLOR MARQUEE EFFECT (LOCAL ADDITION)*colorful-winsep-multi-color-marquee-effect-(local-addition)*
+
+
+You can create a marquee/neon light effect or override the default highlight
+simply by passing an array of hex colors to the `colors` option in your
+`setup()`, or dynamically by calling `set_colors()`.
+
+>lua
+    -- Static custom color
+    require("colorful-winsep").setup({
+        colors = { "#a6d189" }
+    })
+    
+    -- Multi-color marquee effect
+    require("colorful-winsep").setup({
+        colors = { "#a6d189", "#e5c890", "#e78284", "#ca9ee6", "#8caaee" }
+    })
+<
+
+------------------------------------------------------------------------------
+NODE INTERCEPTOR (ADVANCED)      *colorful-winsep-node-interceptor-(advanced)*
+
+
+We represent the border as a circular linked list model (Left -> Top -> Right
+-> Bottom). You can intercept each node (character point) before it is
+rendered to apply highly custom styling or characters by providing a
+`create_node_hook` function.
+
+The `node` parameter contains:
+
+- `index`: (integer) The global 0-based index tracing the entire active border
+  loop.
+- `type`: (string) Enumeration of the border position: `"vertical_left"`,
+  `"top_left_corner"`, `"horizontal_top"`, `"top_right_corner"`,
+  `"vertical_right"`, `"bottom_right_corner"`, `"horizontal_bottom"`,
+  `"bottom_left_corner"`.
+- `char`: (string) The character intended to be rendered at this spot.
+- `color_idx`: (integer) The index targeting the array of colors (useful if
+  you are writing a multi-color marquee plugin).
+- `win_dir`: (string) Which window direction this node belongs to: `"left"`,
+  `"up"`, `"right"`, `"down"`.
+- `buf_idx`: (integer) Physical position of the extmark on the underlying
+  local buffer.
+Example: Changing corner characters and coloring the corners separately.
+
+>lua
+    require("colorful-winsep").setup({
+        colors = { "#a6d189", "#e5c890", "#ca9ee6" }, -- Base marquee colors
+        
+        -- Interceptor
+        create_node_hook = function(node)
+            -- If it's one of the 4 corners, we replace its character and color
+            if node.type == "top_left_corner" then
+                node.char = "X"
+                node.color_idx = 1
+            elseif node.type == "top_right_corner" then
+                node.char = "O"
+                node.color_idx = 2
+            elseif node.type == "bottom_right_corner" then
+                node.char = "X"
+                node.color_idx = 3
+            elseif node.type == "bottom_left_corner" then
+                node.char = "O"
+                node.color_idx = 1
+            elseif node.type == "horizontal_bottom" then
+                -- For example, you want the bottom border to be totally different
+                node.char = "="
+            end
+        end,
+    })
+<
 
 ------------------------------------------------------------------------------
 LICENSE                                              *colorful-winsep-license*
