@@ -1,4 +1,4 @@
-*colorful-winsep.txt*      For Neovim >= 0.11.3     Last change: 2026 April 25
+*colorful-winsep.txt*      For Neovim >= 0.11.3     Last change: 2026 April 26
 
 ==============================================================================
 Table of Contents                          *colorful-winsep-table-of-contents*
@@ -203,6 +203,8 @@ simply by passing an array of hex colors to the `colors` option in your
         colors = { "#a6d189", "#e5c890", "#e78284", "#ca9ee6", "#8caaee" }
     })
 <
+https://github.com/user-attachments/assets/b42d8fd0-5611-44df-853c-1656b5d8f3bd
+
 
 ------------------------------------------------------------------------------
 NODE INTERCEPTOR (ADVANCED)      *colorful-winsep-node-interceptor-(advanced)*
