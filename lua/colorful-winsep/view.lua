@@ -5,6 +5,8 @@ local api = vim.api
 local fn = vim.fn
 local directions = utils.directions
 
+local BorderModel = require("colorful-winsep.model")
+
 local M = {}
 M.separators = {
     left = Separator:new(),
@@ -12,219 +14,201 @@ M.separators = {
     up = Separator:new(),
     right = Separator:new(),
 }
+M.border_model = BorderModel:new()
 
----@param only_2wins boolean we should deal with 2 windows situation
-function M.render_left(only_2wins)
+local function calculate_layout(dir, only_2wins)
+    local current_row, current_col = unpack(api.nvim_win_get_position(0))
     local sep_height = fn.winheight(0)
-    local current_row, current_col = unpack(api.nvim_win_get_position(0))
-    local anchor_row = current_row
-    local anchor_col = current_col - 1
-    local sep = M.separators.left
-    sep.start_symbol = config.opts.border[2]
-    sep.body_symbol = config.opts.border[2]
-    sep.end_symbol = config.opts.border[2]
-
-    if utils.has_winbar() then
-        sep_height = sep_height + 1
-    end
-
-    if utils.has_adjacent_win(directions.up) then
-        sep.start_symbol = config.opts.border[3]
-        sep_height = sep_height + 1
-        anchor_row = anchor_row - 1
-    end
-    if utils.has_adjacent_win(directions.down) then
-        sep.end_symbol = config.opts.border[5]
-        sep_height = sep_height + 1
-    end
-
-    if only_2wins then
-        anchor_row = sep_height - math.ceil(sep_height / 2)
-        sep_height = math.ceil(sep_height / 2)
-        if config.opts.indicator_for_2wins.position == "center" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_left
-        elseif config.opts.indicator_for_2wins.position == "start" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_left
-        elseif config.opts.indicator_for_2wins.position == "end" then
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_left
-        elseif config.opts.indicator_for_2wins.position == "both" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_left
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_left
-        end
-    end
-
-    sep:vertical_init(sep_height)
-    if not sep._show then
-        sep:move(anchor_row, anchor_col)
-        sep:show()
-    elseif config.opts.animate.enabled == "shift" then
-        sep:shift_move(anchor_row, anchor_col)
-    else
-        sep:move(anchor_row, anchor_col)
-    end
-    if config.opts.animate.enabled == "progressive" then
-        sep:progressive_animate_vertical()
-    end
-end
-
----@param only_2wins boolean we should deal with 2 windows situation
-function M.render_down(only_2wins)
     local sep_width = fn.winwidth(0)
-    local current_row, current_col = unpack(api.nvim_win_get_position(0))
-    local anchor_row = current_row + fn.winheight(0)
-    local anchor_col = current_col
-    local sep = M.separators.down
-    sep.start_symbol = config.opts.border[1]
-    sep.body_symbol = config.opts.border[1]
-    sep.end_symbol = config.opts.border[1]
 
-    if utils.has_winbar() then
-        anchor_row = anchor_row + 1
-    end
+    local layout = {
+        anchor_row = current_row,
+        anchor_col = current_col,
+        size = 0,
+        is_vertical = false,
+        start_symbol = "",
+        body_symbol = "",
+        end_symbol = ""
+    }
 
-    if utils.has_adjacent_win(directions.right) then
-        sep.end_symbol = config.opts.border[6]
-        sep_width = sep_width + 1
-    end
+    if dir == "left" then
+        layout.is_vertical = true
+        layout.anchor_col = current_col - 1
+        layout.size = sep_height
+        layout.start_symbol = config.opts.border[2]
+        layout.body_symbol = config.opts.border[2]
+        layout.end_symbol = config.opts.border[2]
 
-    if only_2wins then
-        sep_width = math.ceil(sep_width / 2)
-        if config.opts.indicator_for_2wins.position == "center" then
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_down
-        elseif config.opts.indicator_for_2wins.position == "start" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_down
-        elseif config.opts.indicator_for_2wins.position == "end" then
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_down
-        elseif config.opts.indicator_for_2wins.position == "both" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_down
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_down
+        if utils.has_winbar() then layout.size = layout.size + 1 end
+        if utils.has_adjacent_win(directions.up) then
+            layout.start_symbol = config.opts.border[3]
+            layout.size = layout.size + 1
+            layout.anchor_row = layout.anchor_row - 1
+        end
+        if utils.has_adjacent_win(directions.down) then
+            layout.end_symbol = config.opts.border[5]
+            layout.size = layout.size + 1
+        end
+
+        if only_2wins then
+            layout.anchor_row = layout.size - math.ceil(layout.size / 2)
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "center" or pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_left
+            end
+            if pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_left
+            end
+        end
+
+    elseif dir == "down" then
+        layout.is_vertical = false
+        layout.anchor_row = current_row + sep_height
+        layout.size = sep_width
+        layout.start_symbol = config.opts.border[1]
+        layout.body_symbol = config.opts.border[1]
+        layout.end_symbol = config.opts.border[1]
+
+        if utils.has_winbar() then layout.anchor_row = layout.anchor_row + 1 end
+        if utils.has_adjacent_win(directions.right) then
+            layout.end_symbol = config.opts.border[6]
+            layout.size = layout.size + 1
+        end
+
+        if only_2wins then
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_down
+            end
+            if pos == "center" or pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_down
+            end
+        end
+
+    elseif dir == "up" then
+        layout.is_vertical = false
+        layout.anchor_row = current_row - 1
+        layout.size = sep_width
+        layout.start_symbol = config.opts.border[1]
+        layout.body_symbol = config.opts.border[1]
+        layout.end_symbol = config.opts.border[1]
+
+        if utils.has_adjacent_win(directions.right) then
+            layout.end_symbol = config.opts.border[4]
+            layout.size = layout.size + 1
+        end
+
+        if only_2wins then
+            layout.anchor_col = layout.size - math.ceil(layout.size / 2)
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "center" or pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_up
+            end
+            if pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_up
+            end
+        end
+
+    elseif dir == "right" then
+        layout.is_vertical = true
+        layout.anchor_col = current_col + sep_width
+        layout.size = sep_height
+        layout.start_symbol = config.opts.border[2]
+        layout.body_symbol = config.opts.border[2]
+        layout.end_symbol = config.opts.border[2]
+
+        if utils.has_winbar() then layout.size = layout.size + 1 end
+
+        if only_2wins then
+            layout.size = math.ceil(layout.size / 2)
+            local pos = config.opts.indicator_for_2wins.position
+            local syms = config.opts.indicator_for_2wins.symbols
+            if pos == "start" or pos == "both" then
+                layout.start_symbol = syms.start_right
+            end
+            if pos == "center" or pos == "end" or pos == "both" then
+                layout.end_symbol = syms.end_right
+            end
         end
     end
 
-    sep:horizontal_init(sep_width)
-    if not sep._show then
-        sep:move(anchor_row, anchor_col)
-        sep:show()
-    elseif config.opts.animate.enabled == "shift" then
-        sep:shift_move(anchor_row, anchor_col)
-    else
-        sep:move(anchor_row, anchor_col)
-    end
-    if config.opts.animate.enabled == "progressive" then
-        sep:progressive_animate_horizontal(true)
-    end
-end
-
----@param only_2wins boolean we should deal with 2 windows situation
-function M.render_up(only_2wins)
-    local sep_width = fn.winwidth(0)
-    local current_row, current_col = unpack(api.nvim_win_get_position(0))
-    local anchor_row = current_row - 1
-    local anchor_col = current_col
-    local sep = M.separators.up
-    sep.start_symbol = config.opts.border[1]
-    sep.body_symbol = config.opts.border[1]
-    sep.end_symbol = config.opts.border[1]
-
-    if utils.has_adjacent_win(directions.right) then
-        sep.end_symbol = config.opts.border[4]
-        sep_width = sep_width + 1
-    end
-
-    if only_2wins then
-        anchor_col = sep_width - math.ceil(sep_width / 2)
-        sep_width = math.ceil(sep_width / 2)
-        if config.opts.indicator_for_2wins.position == "center" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_up
-        elseif config.opts.indicator_for_2wins.position == "start" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_up
-        elseif config.opts.indicator_for_2wins.position == "end" then
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_up
-        elseif config.opts.indicator_for_2wins.position == "both" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_up
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_up
-        end
-    end
-
-    sep:horizontal_init(sep_width)
-    if not sep._show then
-        sep:move(anchor_row, anchor_col)
-        sep:show()
-    elseif config.opts.animate.enabled == "shift" then
-        sep:shift_move(anchor_row, anchor_col)
-    else
-        sep:move(anchor_row, anchor_col)
-    end
-    if config.opts.animate.enabled == "progressive" then
-        sep:progressive_animate_horizontal()
-    end
-end
-
----@param only_2wins boolean we should deal with 2 windows situation
-function M.render_right(only_2wins)
-    local sep_height = fn.winheight(0)
-    local current_row, current_col = unpack(api.nvim_win_get_position(0))
-    local anchor_row = current_row
-    local anchor_col = current_col + fn.winwidth(0)
-    local sep = M.separators.right
-    sep.start_symbol = config.opts.border[2]
-    sep.body_symbol = config.opts.border[2]
-    sep.end_symbol = config.opts.border[2]
-
-    if utils.has_winbar() then
-        sep_height = sep_height + 1
-    end
-
-    if only_2wins then
-        sep_height = math.ceil(sep_height / 2)
-        if config.opts.indicator_for_2wins.position == "center" then
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_right
-        elseif config.opts.indicator_for_2wins.position == "start" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_right
-        elseif config.opts.indicator_for_2wins.position == "end" then
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_right
-        elseif config.opts.indicator_for_2wins.position == "both" then
-            sep.start_symbol = config.opts.indicator_for_2wins.symbols.start_right
-            sep.end_symbol = config.opts.indicator_for_2wins.symbols.end_right
-        end
-    end
-
-    sep:vertical_init(sep_height)
-    if not sep._show then
-        sep:move(anchor_row, anchor_col)
-        sep:show()
-    elseif config.opts.animate.enabled == "shift" then
-        sep:shift_move(anchor_row, anchor_col)
-    else
-        sep:move(anchor_row, anchor_col)
-    end
-    if config.opts.animate.enabled == "progressive" then
-        sep:progressive_animate_vertical(true)
-    end
+    return layout
 end
 
 --- the order of rendering a full set of separators:  left -> down -> up -> right (i.e. hjlkl)
 function M.render()
-    local only_2wins = (utils.count_windows() == 2) and true or false
-    if utils.has_adjacent_win(directions.left) then
-        M.render_left(only_2wins)
-    else
-        M.separators.left:hide()
+    local only_2wins = (utils.count_windows() == 2)
+    local dir_list = { "left", "down", "up", "right" }
+    
+    local planned_layouts = {}
+    -- pre-calculate before render
+    for _, dir in ipairs(dir_list) do
+        if utils.has_adjacent_win(directions[dir]) then
+            planned_layouts[dir] = calculate_layout(dir, only_2wins)
+        end
     end
-    if utils.has_adjacent_win(directions.down) then
-        M.render_down(only_2wins)
-    else
-        M.separators.down:hide()
+
+    -- build circular border model
+    M.border_model:build(planned_layouts)
+
+    -- Override layout symbols with potentially modified node chars
+    local nodes = M.border_model:get_nodes()
+    for _, node in ipairs(nodes) do
+        local layout = planned_layouts[node.win_dir]
+        if layout then
+            if node.type:find("corner") then
+                if node.buf_idx == 1 then
+                    layout.start_symbol = node.char
+                elseif node.buf_idx == layout.size then
+                    layout.end_symbol = node.char
+                end
+            else
+                layout.body_symbol = node.char
+            end
+        end
     end
-    if utils.has_adjacent_win(directions.up) then
-        M.render_up(only_2wins)
-    else
-        M.separators.up:hide()
-    end
-    if utils.has_adjacent_win(directions.right) then
-        M.render_right(only_2wins)
-    else
-        M.separators.right:hide()
+
+    -- render using direction array 
+    for _, dir in ipairs(dir_list) do
+        local layout = planned_layouts[dir]
+        local sep = M.separators[dir]
+
+        if layout then
+            sep.start_symbol = layout.start_symbol
+            sep.body_symbol = layout.body_symbol
+            sep.end_symbol = layout.end_symbol
+            
+            if layout.is_vertical then
+                sep:vertical_init(layout.size)
+            else
+                sep:horizontal_init(layout.size)
+            end
+
+            if not sep._show then
+                sep:move(layout.anchor_row, layout.anchor_col)
+                sep:show()
+            elseif config.opts.animate.enabled == "shift" then
+                sep:shift_move(layout.anchor_row, layout.anchor_col)
+            else
+                sep:move(layout.anchor_row, layout.anchor_col)
+            end
+
+            if config.opts.animate.enabled == "progressive" then
+                if layout.is_vertical then
+                    sep:progressive_animate_vertical(dir == "right")
+                else
+                    sep:progressive_animate_horizontal(dir == "down")
+                end
+            end
+        else
+            sep:hide()
+        end
     end
 end
 

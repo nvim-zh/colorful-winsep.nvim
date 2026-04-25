@@ -119,7 +119,8 @@ function Separator:shift_move(row, col)
 
             i = i + 1
             local t = math.min(i / frames, 1)
-            local k = utils.ease_out_cubic(t)
+            local easing_fn = utils.easing[animate_config.easing] or utils.easing.ease_out_cubic
+            local k = easing_fn(t)
 
             local cur_row = math.floor(utils.lerp(start_row, row, k) + 0.5)
             local cur_col = math.floor(utils.lerp(start_col, col, k) + 0.5)

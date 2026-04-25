@@ -4,6 +4,10 @@ local api = vim.api
 
 local M = {}
 M.enabled = true
+M.colors = {}
+M.marquee_timer = nil
+M.marquee_offset = 0
+local marquee_ns_id = api.nvim_create_namespace("colorful-winsep-marquee")
 
 function M.enable()
     M.enabled = true
@@ -20,6 +24,81 @@ function M.toggle()
         M.disable()
     else
         M.enable()
+    end
+end
+
+--- Set custom colors for separators. 
+--- Single color will be statically applied, while multiple colors will create a marquee effect.
+---@param colors table A list of hex color strings (e.g. {"#FF0000", "#00FF00"})
+function M.set_colors(colors)
+    if type(colors) ~= "table" or #colors == 0 then return end
+    M.colors = colors
+
+    if M.marquee_timer and not M.marquee_timer:is_closing() then
+        M.marquee_timer:stop()
+        M.marquee_timer:close()
+        M.marquee_timer = nil
+    end
+
+    local bg = api.nvim_get_hl(0, { name = "Normal" }).bg
+
+    if #colors == 1 then
+        api.nvim_set_hl(0, "ColorfulWinSep", { fg = colors[1], bg = bg })
+        for _, sep in pairs(view.separators) do
+             if sep.buffer and api.nvim_buf_is_valid(sep.buffer) then
+                 api.nvim_buf_clear_namespace(sep.buffer, marquee_ns_id, 0, -1)
+             end
+        end
+    else
+        for i, c in ipairs(colors) do
+            api.nvim_set_hl(0, "ColorfulWinSep_" .. i, { fg = c, bg = bg })
+        end
+
+        M.marquee_offset = 0
+        M.marquee_timer = vim.uv.new_timer()
+        M.marquee_timer:start(0, 100, vim.schedule_wrap(function()
+            if not M.enabled then return end
+            M.marquee_offset = (M.marquee_offset + 1) % #M.colors
+            
+            local nodes = view.border_model:get_nodes()
+            if #nodes == 0 then return end
+            
+            -- First pass: clear old extmarks for all valid buffers
+            for _, sep in pairs(view.separators) do
+                if sep._show and api.nvim_buf_is_valid(sep.buffer) then
+                    api.nvim_buf_clear_namespace(sep.buffer, marquee_ns_id, 0, -1)
+                end
+            end
+            
+            -- Second pass: map global color index to each buffer
+            for _, node in ipairs(nodes) do
+                local color_idx = ((node.index + M.marquee_offset) % #M.colors) + 1
+                local sep = view.separators[node.win_dir]
+                
+                if sep and sep._show and api.nvim_buf_is_valid(sep.buffer) then
+                    if node.win_dir == "left" or node.win_dir == "right" then
+                        -- For vertical bars, `buf_idx` translates to line number (1-indexed)
+                        api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, {
+                            end_row = node.buf_idx,
+                            end_col = 0,
+                            hl_group = "ColorfulWinSep_" .. color_idx,
+                        })
+                    else
+                        -- For horizontal bars, `buf_idx` translates to column position
+                        local lines = api.nvim_buf_get_lines(sep.buffer, 0, 1, false)
+                        if lines[1] then
+                            local byte_start = vim.fn.byteidx(lines[1], node.buf_idx - 1)
+                            local byte_end = vim.fn.byteidx(lines[1], node.buf_idx)
+                            api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, 0, byte_start, {
+                                end_row = 0,
+                                end_col = byte_end,
+                                hl_group = "ColorfulWinSep_" .. color_idx,
+                            })
+                        end
+                    end
+                end
+            end
+        end))
     end
 end
 
@@ -51,6 +130,10 @@ function M.setup(user_opts)
     config.merge_config(user_opts)
 
     create_command()
+
+    if config.opts.colors and #config.opts.colors > 0 then
+        M.set_colors(config.opts.colors)
+    end
 
     local auto_group = api.nvim_create_augroup("colorful_winsep", { clear = true })
     api.nvim_create_autocmd({ "WinEnter", "WinResized", "BufWinEnter" }, {
@@ -111,7 +194,13 @@ function M.setup(user_opts)
     })
     api.nvim_create_autocmd({ "ColorScheme" }, {
         group = auto_group,
-        callback = config.opts.highlight,
+        callback = function()
+            if M.colors and #M.colors > 0 then
+                M.set_colors(M.colors)
+            else
+                config.opts.highlight()
+            end
+        end,
     })
 end
 

@@ -59,6 +59,7 @@ require("colorful-winsep").setup({
         shift = {
             delay = 16, -- about 60fps
             frames = 15, -- how many frames are required to complete the animation
+            easing = "ease_out_cubic", -- available algorithms: linear, ease_out_cubic, ease_in_out_sine, ease_out_quad, ease_out_expo
         },
         progressive = {
             delay = 16,
@@ -81,6 +82,7 @@ require("colorful-winsep").setup({
             end_right = "󱞦",
         },
     },
+    colors = {}, -- Add a custom color array. Single color applies statically, multiple colors will create a marquee effect.
 })
 ```
 
@@ -116,6 +118,60 @@ The highlight's name is `ColorfulWinSep`. You can change it using nvim's builtin
 If you want to change it through plugin's setup function, you can pass a string or function to the `highlight` field. When you pass a string, it will work as the fg, and the bg will be set up the same as "Normal" highlight group's bg automatically (see `:h hl-Normal`). When you pass a function, the function will be called when the plugin runs and every time the color scheme is changed.
 
 By default, the configuration's `highlight` field is `nil`. This means the plugin will do nothing if you set the highlight group before it loads. Otherwise, the highlight is set to `#957CC6`. This is useful if you use your color scheme plugin (like catppuccin) to control highlights.
+
+## Multi-color Marquee Effect (Local Addition)
+You can create a marquee/neon light effect or override the default highlight simply by passing an array of hex colors to the `colors` option in your `setup()`, or dynamically by calling `set_colors()`. 
+
+```lua
+-- Static custom color
+require("colorful-winsep").setup({
+    colors = { "#a6d189" }
+})
+
+-- Multi-color marquee effect
+require("colorful-winsep").setup({
+    colors = { "#a6d189", "#e5c890", "#e78284", "#ca9ee6", "#8caaee" }
+})
+```
+
+## Node Interceptor (Advanced)
+We represent the border as a circular linked list model (Left -> Top -> Right -> Bottom). You can intercept each node (character point) before it is rendered to apply highly custom styling or characters by providing a `create_node_hook` function.
+
+The `node` parameter contains:
+- `index`: (integer) The global 0-based index tracing the entire active border loop.
+- `type`: (string) Enumeration of the border position: `"vertical_left"`, `"top_left_corner"`, `"horizontal_top"`, `"top_right_corner"`, `"vertical_right"`, `"bottom_right_corner"`, `"horizontal_bottom"`, `"bottom_left_corner"`.
+- `char`: (string) The character intended to be rendered at this spot.
+- `color_idx`: (integer) The index targeting the array of colors (useful if you are writing a multi-color marquee plugin).
+- `win_dir`: (string) Which window direction this node belongs to: `"left"`, `"up"`, `"right"`, `"down"`.
+- `buf_idx`: (integer) Physical position of the extmark on the underlying local buffer.
+
+Example: Changing corner characters and coloring the corners separately.
+```lua
+require("colorful-winsep").setup({
+    colors = { "#a6d189", "#e5c890", "#ca9ee6" }, -- Base marquee colors
+    
+    -- Interceptor
+    create_node_hook = function(node)
+        -- If it's one of the 4 corners, we replace its character and color
+        if node.type == "top_left_corner" then
+            node.char = "X"
+            node.color_idx = 1
+        elseif node.type == "top_right_corner" then
+            node.char = "O"
+            node.color_idx = 2
+        elseif node.type == "bottom_right_corner" then
+            node.char = "X"
+            node.color_idx = 3
+        elseif node.type == "bottom_left_corner" then
+            node.char = "O"
+            node.color_idx = 1
+        elseif node.type == "horizontal_bottom" then
+            -- For example, you want the bottom border to be totally different
+            node.char = "="
+        end
+    end,
+})
+```
 
 ## License
 
