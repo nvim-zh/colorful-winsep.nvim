@@ -64,11 +64,12 @@ function M.lerp(current, target, factor)
     return current + (target - current) * factor
 end
 
----- 1 - (1 - t)^3
----@param t integer
----@return number
-function M.ease_out_cubic(t)
-    return 1 - math.pow(1 - t, 3)
-end
+M.easing = {
+    linear = function(t) return t end,
+    ease_out_cubic = function(t) return 1 - math.pow(1 - t, 3) end,
+    ease_in_out_sine = function(t) return -(math.cos(math.pi * t) - 1) / 2 end,
+    ease_out_quad = function(t) return 1 - (1 - t) * (1 - t) end,
+    ease_out_expo = function(t) return t == 1 and 1 or 1 - math.pow(2, -10 * t) end,
+}
 
 return M

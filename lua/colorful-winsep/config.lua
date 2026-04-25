@@ -10,6 +10,7 @@ M.opts = {
         shift = {
             delay = 16, -- about 60fps
             frames = 15, -- how many frames are required to complete the animation
+            easing = "ease_out_cubic", -- available algorithms: linear, ease_out_cubic, ease_in_out_sine, ease_out_quad, ease_out_expo
         },
         progressive = {
             delay = 16,
@@ -32,6 +33,8 @@ M.opts = {
             end_right = "󱞦",
         },
     },
+    colors = {}, -- Add a custom color array. Single color applies statically, multiple colors will create a marquee effect.
+    create_node_hook = nil, -- Optional callback: function(node) end. Allows modifying node.char or node.color_idx before rendering.
 }
 
 function M.merge_config(user_opts)
