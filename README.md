@@ -134,14 +134,13 @@ require("colorful-winsep").setup({
 })
 ```
 
-## Node Interceptor (Advanced)
-We represent the border as a circular linked list model (Left -> Top -> Right -> Bottom). You can intercept each node (character point) before it is rendered to apply highly custom styling or characters by providing a `create_node_hook` function.
+## on_frame_render (Advanced)
+We represent the border as a circular linked list model (Left -> Top -> Right -> Bottom). You can intercept each node (character point) before it is rendered to apply highly custom styling or characters by providing an `on_frame_render` function.
 
 The `node` parameter contains:
 - `index`: (integer) The global 0-based index tracing the entire active border loop.
 - `type`: (string) Enumeration of the border position: `"vertical_left"`, `"top_left_corner"`, `"horizontal_top"`, `"top_right_corner"`, `"vertical_right"`, `"bottom_right_corner"`, `"horizontal_bottom"`, `"bottom_left_corner"`.
 - `char`: (string) The character intended to be rendered at this spot.
-- `color_idx`: (integer) The index targeting the array of colors (useful if you are writing a multi-color marquee plugin).
 - `win_dir`: (string) Which window direction this node belongs to: `"left"`, `"up"`, `"right"`, `"down"`.
 - `buf_idx`: (integer) Physical position of the extmark on the underlying local buffer.
 
@@ -151,24 +150,14 @@ require("colorful-winsep").setup({
     colors = { "#a6d189", "#e5c890", "#ca9ee6" }, -- Base marquee colors
     
     -- Interceptor
-    create_node_hook = function(node)
+    on_frame_render = function(node, color_idx, offset, total_colors, total_nodes)
         -- If it's one of the 4 corners, we replace its character and color
-        if node.type == "top_left_corner" then
-            node.char = "X"
-            node.color_idx = 1
-        elseif node.type == "top_right_corner" then
-            node.char = "O"
-            node.color_idx = 2
-        elseif node.type == "bottom_right_corner" then
-            node.char = "X"
-            node.color_idx = 3
-        elseif node.type == "bottom_left_corner" then
-            node.char = "O"
-            node.color_idx = 1
-        elseif node.type == "horizontal_bottom" then
-            -- For example, you want the bottom border to be totally different
-            node.char = "="
+        if node.type:find("corner") then
+            return "X", "ColorfulWinSep_1"
         end
+        
+        -- Keep original character and color
+        return node.char, "ColorfulWinSep_" .. color_idx
     end,
 })
 ```
