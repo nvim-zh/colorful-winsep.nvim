@@ -88,6 +88,7 @@ function M.set_colors(colors)
                         if custom_hl then hl_group = custom_hl end
                     end
 
+                    local target_char = virt_char or node.char
                     local extmark_opts = {
                         end_row = node.buf_idx,
                         end_col = 0,
@@ -96,10 +97,20 @@ function M.set_colors(colors)
 
                     if node.win_dir == "left" or node.win_dir == "right" then
                         -- For vertical bars, `buf_idx` translates to line number (1-indexed)
-                        local target_char = virt_char or node.char
-                        local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
-                        if old_line and target_char and old_line ~= target_char then
-                            api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { target_char })
+                        if virt_char then
+                            extmark_opts.virt_text = {{ virt_char, hl_group }}
+                            extmark_opts.virt_text_pos = "overlay"
+                            
+                            -- Reset original character if we are using virt_text
+                            local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
+                            if old_line and node.char and old_line ~= node.char then
+                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
+                            end
+                        else
+                            local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
+                            if old_line and target_char and old_line ~= target_char then
+                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { target_char })
+                            end
                         end
                         api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, extmark_opts)
                     else
