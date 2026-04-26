@@ -88,7 +88,6 @@ function M.set_colors(colors)
                         if custom_hl then hl_group = custom_hl end
                     end
 
-                    local target_char = virt_char or node.char
                     local extmark_opts = {
                         end_row = node.buf_idx,
                         end_col = 0,
@@ -108,8 +107,8 @@ function M.set_colors(colors)
                             end
                         else
                             local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
-                            if old_line and target_char and old_line ~= target_char then
-                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { target_char })
+                            if old_line and node.char and old_line ~= node.char then
+                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
                             end
                         end
                         api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, extmark_opts)
@@ -138,11 +137,11 @@ function M.set_colors(colors)
                                 extmark_opts.virt_text_pos = "overlay"
                             else
                                 local current_char = string.sub(lines[1], byte_start + 1, byte_end)
-                                if target_char and current_char ~= target_char then
-                                    local new_line = string.sub(lines[1], 1, byte_start) .. target_char .. string.sub(lines[1], byte_end + 1)
+                                if node.char and current_char ~= node.char then
+                                    local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
                                     api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
                                     
-                                    byte_end = byte_start + #target_char
+                                    byte_end = byte_start + #node.char
                                     extmark_opts.end_col = byte_end
                                 end
                             end
