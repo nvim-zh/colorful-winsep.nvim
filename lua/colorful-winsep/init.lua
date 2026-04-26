@@ -124,9 +124,6 @@ function M.set_colors(colors)
                             extmark_opts.end_col = byte_end
                             
                             if virt_char then
-                                extmark_opts.virt_text = {{ virt_char, hl_group }}
-                                extmark_opts.virt_text_pos = "overlay"
-                                
                                 -- keep original text in buffer
                                 local current_char = string.sub(lines[1], byte_start + 1, byte_end)
                                 if node.char and current_char ~= node.char then
@@ -134,8 +131,11 @@ function M.set_colors(colors)
                                     api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
                                     
                                     byte_end = byte_start + #node.char
-                                    extmark_opts.end_col = byte_end
                                 end
+                                
+                                extmark_opts.end_col = byte_start + #node.char
+                                extmark_opts.virt_text = {{ virt_char, hl_group }}
+                                extmark_opts.virt_text_pos = "overlay"
                             else
                                 local current_char = string.sub(lines[1], byte_start + 1, byte_end)
                                 if target_char and current_char ~= target_char then
