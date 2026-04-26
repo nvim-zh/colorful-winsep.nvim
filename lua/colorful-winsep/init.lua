@@ -109,10 +109,10 @@ function M.set_colors(colors)
                         local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
                         -- Restore the base original character of the node, to allow virt_text overlay properly
                         if old_line and node.char and old_line ~= node.char then
-                            -- Only attempt to replace if the old_line has the same width as node.char
-                            -- Vertical characters shouldn't suddenly become multiple bytes long 
-                            -- without careful subbing, but in vertical seps it's just one char per line usually.
-                            api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
+                            -- For vertical bars, we should ensure the original length matches before simple string replace
+                            if #old_line == #node.char then
+                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
+                            end
                         end
 
                         api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, extmark_opts)
@@ -130,12 +130,15 @@ function M.set_colors(colors)
                             -- Restore the base original character of the node, to allow virt_text overlay properly
                             local current_char = string.sub(lines[1], byte_start + 1, byte_end)
                             if node.char and current_char ~= node.char then
-                                local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
-                                api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
-                                -- Update the line reference and byte_end since the character width may have changed
-                                lines[1] = new_line
-                                byte_end = byte_start + #node.char
-                                extmark_opts.end_col = byte_end
+                                -- Only modify if byte width matches, to prevent shifting characters
+                                if #current_char == #node.char then
+                                    local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
+                                    api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
+                                    -- Update the line reference and byte_end since the character width may have changed
+                                    lines[1] = new_line
+                                    byte_end = byte_start + #node.char
+                                    extmark_opts.end_col = byte_end
+                                end
                             end
 
                             if virt_char then
