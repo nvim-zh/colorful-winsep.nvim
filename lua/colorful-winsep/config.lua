@@ -34,7 +34,7 @@ M.opts = {
         },
     },
     colors = {}, -- Add a custom color array. Single color applies statically, multiple colors will create a marquee effect.
-    create_node_hook = nil, -- Optional callback: function(node) end. Allows modifying node.char or node.color_idx before rendering.
+    on_frame_render = nil,  -- Optional callback: function(node, color_idx, offset, total_colors, total_nodes) end. Returns custom_char, custom_hl_group
 }
 
 function M.merge_config(user_opts)

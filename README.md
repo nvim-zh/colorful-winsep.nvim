@@ -134,18 +134,13 @@ require("colorful-winsep").setup({
 })
 ```
 
-
-https://github.com/user-attachments/assets/b42d8fd0-5611-44df-853c-1656b5d8f3bd
-
-
-## Node Interceptor (Advanced)
-We represent the border as a circular linked list model (Left -> Top -> Right -> Bottom). You can intercept each node (character point) before it is rendered to apply highly custom styling or characters by providing a `create_node_hook` function.
+## on_frame_render (Advanced)
+We represent the border as a circular linked list model (Left -> Top -> Right -> Bottom). You can intercept each node (character point) before it is rendered to apply highly custom styling or characters by providing an `on_frame_render` function.
 
 The `node` parameter contains:
 - `index`: (integer) The global 0-based index tracing the entire active border loop.
 - `type`: (string) Enumeration of the border position: `"vertical_left"`, `"top_left_corner"`, `"horizontal_top"`, `"top_right_corner"`, `"vertical_right"`, `"bottom_right_corner"`, `"horizontal_bottom"`, `"bottom_left_corner"`.
 - `char`: (string) The character intended to be rendered at this spot.
-- `color_idx`: (integer) The index targeting the array of colors (useful if you are writing a multi-color marquee plugin).
 - `win_dir`: (string) Which window direction this node belongs to: `"left"`, `"up"`, `"right"`, `"down"`.
 - `buf_idx`: (integer) Physical position of the extmark on the underlying local buffer.
 
@@ -155,24 +150,108 @@ require("colorful-winsep").setup({
     colors = { "#a6d189", "#e5c890", "#ca9ee6" }, -- Base marquee colors
     
     -- Interceptor
-    create_node_hook = function(node)
+    on_frame_render = function(node, color_idx, offset, total_colors, total_nodes)
         -- If it's one of the 4 corners, we replace its character and color
-        if node.type == "top_left_corner" then
-            node.char = "X"
-            node.color_idx = 1
-        elseif node.type == "top_right_corner" then
-            node.char = "O"
-            node.color_idx = 2
-        elseif node.type == "bottom_right_corner" then
-            node.char = "X"
-            node.color_idx = 3
-        elseif node.type == "bottom_left_corner" then
-            node.char = "O"
-            node.color_idx = 1
-        elseif node.type == "horizontal_bottom" then
-            -- For example, you want the bottom border to be totally different
-            node.char = "="
+        if node.type:find("corner") then
+            return "X", "ColorfulWinSep_1"
         end
+        
+        -- Keep original character and color
+        return node.char, "ColorfulWinSep_" .. color_idx
+    end,
+})
+```
+
+Example: A playable Snake Game effect on your window border!
+```lua
+local track_color = "#4c566a"
+local snake_body = {"#5e81ac", "#81a1c1", "#88c0d0", "#8fbcbb", "#a3be8c"}
+
+-- Prepare an oversized array for the track, long enough for a 4K screen
+local snake_colors = {}
+for i = 1, 500 do table.insert(snake_colors, track_color) end
+for _, c in ipairs(snake_body) do table.insert(snake_colors, c) end
+
+local my_game_state = {
+    food_index = nil,
+    snake_length = #snake_body,
+}
+
+vim.api.nvim_set_hl(0, "ColorfulWinSep_Food", { fg = "#EBCB8B" })
+vim.api.nvim_set_hl(0, "ColorfulWinSep_Track", { fg = track_color })
+
+-- dynamically calculates the color gradient without any pre-allocated highlights
+local function hex2rgb(hex)
+    hex = hex:gsub("#", "")
+    return tonumber("0x" .. hex:sub(1, 2), 16), tonumber("0x" .. hex:sub(3, 4), 16), tonumber("0x" .. hex:sub(5, 6), 16)
+end
+local head_r, head_g, head_b = hex2rgb(snake_body[#snake_body])
+local track_r, track_g, track_b = hex2rgb(track_color)
+math.randomseed(os.time())
+
+require("colorful-winsep").setup({
+    border = { "─", "│", "┌", "┐", "└", "┘" },
+    animate = { enabled = "shift" },
+    indicator_for_2wins = { position = false },
+    colors = snake_colors,
+
+    on_frame_render = function(node, color_idx, offset, total_colors, total_nodes)
+        -- 1. Generate food
+        if not my_game_state.food_index or my_game_state.food_index >= total_nodes then
+            my_game_state.food_index = math.random(0, total_nodes - 1)
+        end
+
+        -- 2. Calculate snake head position based on the offset
+        local head_color_idx = total_colors
+        local head_node_idx = (total_nodes - (offset % total_nodes) + head_color_idx - 2) % total_nodes
+
+        -- 3. Check distance from head
+        local distance_from_head = (head_node_idx - node.index + total_nodes) % total_nodes
+        local is_snake = (distance_from_head < my_game_state.snake_length)
+
+        -- 4. Eat food logic
+        if is_snake and node.index == my_game_state.food_index then
+            my_game_state.food_index = math.random(0, total_nodes - 1)
+            my_game_state.snake_length = my_game_state.snake_length + 1
+            
+            -- Reset game if snake fills the entire border
+            if my_game_state.snake_length >= total_nodes - 2 then
+                my_game_state.snake_length = #snake_body
+            end
+        end
+
+        -- 5. Render
+        if is_snake then
+            local char = "━"
+            if node.char == "│" then char = "┃"
+            elseif node.char == "─" then char = "━"
+            elseif node.char == "┌" then char = "┏"
+            elseif node.char == "┐" then char = "┓"
+            elseif node.char == "└" then char = "┗"
+            elseif node.char == "┘" then char = "┛"
+            elseif node.char == "├" then char = "┣"
+            elseif node.char == "┤" then char = "┫"
+            elseif node.char == "┬" then char = "┳"
+            elseif node.char == "┴" then char = "┻"
+            elseif node.char == "┼" then char = "╋"
+            end
+            
+            local ratio = distance_from_head / math.max(my_game_state.snake_length - 1, 1)
+            ratio = math.max(0, math.min(ratio, 1))
+
+            local r = math.floor(head_r * (1 - ratio) + track_r * ratio)
+            local g = math.floor(head_g * (1 - ratio) + track_g * ratio)
+            local b = math.floor(head_b * (1 - ratio) + track_b * ratio)
+            local hex = string.format("#%02x%02x%02x", r, g, b)
+
+            local hl_name = "ColorfulWinSep_Dyn_" .. distance_from_head .. "_" .. my_game_state.snake_length
+            vim.api.nvim_set_hl(0, hl_name, { fg = hex })
+            return char, hl_name
+        elseif node.index == my_game_state.food_index then
+            return node.char, "ColorfulWinSep_Food"
+        end
+        
+        return nil, "ColorfulWinSep_Track"
     end,
 })
 ```

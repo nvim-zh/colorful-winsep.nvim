@@ -53,11 +53,12 @@ function M.set_colors(colors)
         for i, c in ipairs(colors) do
             api.nvim_set_hl(0, "ColorfulWinSep_" .. i, { fg = c, bg = bg })
         end
-
+        
         M.marquee_offset = 0
         M.marquee_timer = vim.uv.new_timer()
         M.marquee_timer:start(0, 100, vim.schedule_wrap(function()
             if not M.enabled then return end
+            
             M.marquee_offset = (M.marquee_offset + 1) % #M.colors
             
             local nodes = view.border_model:get_nodes()
@@ -73,27 +74,79 @@ function M.set_colors(colors)
             -- Second pass: map global color index to each buffer
             for _, node in ipairs(nodes) do
                 local color_idx = ((node.index + M.marquee_offset) % #M.colors) + 1
+                local hl_group = "ColorfulWinSep_" .. color_idx
+
                 local sep = view.separators[node.win_dir]
                 
                 if sep and sep._show and api.nvim_buf_is_valid(sep.buffer) then
+                    local virt_char = nil
+                    
+                    -- Allow user to completely override char and hl_group per frame
+                    if config.opts.on_frame_render then
+                        local custom_char, custom_hl = config.opts.on_frame_render(node, color_idx, M.marquee_offset, #M.colors, #nodes)
+                        if custom_char then virt_char = custom_char end
+                        if custom_hl then hl_group = custom_hl end
+                    end
+
+                    local extmark_opts = {
+                        end_row = node.buf_idx,
+                        end_col = 0,
+                        hl_group = hl_group,
+                    }
+
+                    -- For horizontal/vertical lines without virt_text, hl_group represents the background color of the cell
+                    -- but since virt_text uses overlay, it places text *on top* of this cell.
+                    -- When virt_text is provided, we should ensure the base buffer highlight uses hl_group as well,
+                    -- unless the user intends otherwise. The virt_text already has hl_group applied in the array.
+
                     if node.win_dir == "left" or node.win_dir == "right" then
                         -- For vertical bars, `buf_idx` translates to line number (1-indexed)
-                        api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, {
-                            end_row = node.buf_idx,
-                            end_col = 0,
-                            hl_group = "ColorfulWinSep_" .. color_idx,
-                        })
+                        if virt_char then
+                            extmark_opts.virt_text = {{ virt_char, hl_group }}
+                            extmark_opts.virt_text_pos = "overlay"
+                        end
+
+                        local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
+                        -- Restore the base original character of the node, to allow virt_text overlay properly
+                        if old_line and node.char and old_line ~= node.char then
+                            -- For vertical bars, we should ensure the original length matches before simple string replace
+                            if #old_line == #node.char then
+                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
+                            end
+                        end
+
+                        api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, extmark_opts)
                     else
                         -- For horizontal bars, `buf_idx` translates to column position
                         local lines = api.nvim_buf_get_lines(sep.buffer, 0, 1, false)
                         if lines[1] then
+                            -- Only byte positions can be used to set extmarks
                             local byte_start = vim.fn.byteidx(lines[1], node.buf_idx - 1)
                             local byte_end = vim.fn.byteidx(lines[1], node.buf_idx)
-                            api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, 0, byte_start, {
-                                end_row = 0,
-                                end_col = byte_end,
-                                hl_group = "ColorfulWinSep_" .. color_idx,
-                            })
+                            
+                            extmark_opts.end_row = 0
+                            extmark_opts.end_col = byte_end
+                            
+                            -- Restore the base original character of the node, to allow virt_text overlay properly
+                            local current_char = string.sub(lines[1], byte_start + 1, byte_end)
+                            if node.char and current_char ~= node.char then
+                                -- Only modify if byte width matches, to prevent shifting characters
+                                if #current_char == #node.char then
+                                    local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
+                                    api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
+                                    -- Update the line reference and byte_end since the character width may have changed
+                                    lines[1] = new_line
+                                    byte_end = byte_start + #node.char
+                                    extmark_opts.end_col = byte_end
+                                end
+                            end
+
+                            if virt_char then
+                                extmark_opts.end_col = byte_start + #node.char
+                                extmark_opts.virt_text = {{ virt_char, hl_group }}
+                                extmark_opts.virt_text_pos = "overlay"
+                            end
+                            api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, 0, byte_start, extmark_opts)
                         end
                     end
                 end

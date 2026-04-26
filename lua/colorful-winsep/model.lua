@@ -59,9 +59,6 @@ function BorderModel:build(planned_layouts)
                 buf_idx = buf_i,
                 color_idx = 1
             }
-            if config.opts.create_node_hook then
-                config.opts.create_node_hook(node)
-            end
             table.insert(self.nodes, node)
             index = index + 1
         end
@@ -91,9 +88,6 @@ function BorderModel:build(planned_layouts)
                 buf_idx = buf_i,
                 color_idx = 1
             }
-            if config.opts.create_node_hook then
-                config.opts.create_node_hook(node)
-            end
             table.insert(self.nodes, node)
             index = index + 1
         end
@@ -123,9 +117,6 @@ function BorderModel:build(planned_layouts)
                 buf_idx = buf_i,
                 color_idx = 1
             }
-            if config.opts.create_node_hook then
-                config.opts.create_node_hook(node)
-            end
             table.insert(self.nodes, node)
             index = index + 1
         end
@@ -156,9 +147,6 @@ function BorderModel:build(planned_layouts)
                 buf_idx = buf_i,
                 color_idx = 1
             }
-            if config.opts.create_node_hook then
-                config.opts.create_node_hook(node)
-            end
             table.insert(self.nodes, node)
             index = index + 1
         end
