@@ -16,125 +16,158 @@ M.separators = {
 }
 M.border_model = BorderModel:new()
 
+local dir_config = {
+    left = {
+        is_vertical = true,
+        size_fn = function()
+            return fn.winheight(0)
+        end,
+        base_anchor = function(row, col)
+            return row, col - 1
+        end,
+        default_symbol = function()
+            return config.opts.border[2]
+        end, -- 统一 body/start/end 默认符号
+        adj_checks = { -- 要检测的相邻窗口方向及对其符号/锚点的影响
+            { dir = "up", start_symbol_idx = 3, anchor_adj = { row = -1 } },
+            { dir = "down", end_symbol_idx = 5 },
+        },
+        only_2wins_anchor = function(layout) -- 仅两个窗口时特殊的锚点调整
+            layout.anchor_row = layout.size - math.ceil(layout.size / 2)
+        end,
+        only_2wins_symbols = {
+            start_left = "start_left",
+            end_left = "end_left",
+            start = "start_left",
+            center = "start_left",
+            both = "start_left",
+            end_sym = "end_left",
+        },
+    },
+    down = {
+        is_vertical = false,
+        size_fn = function()
+            return fn.winwidth(0)
+        end,
+        base_anchor = function(row, col)
+            return row + fn.winheight(0), col
+        end,
+        default_symbol = function()
+            return config.opts.border[1]
+        end,
+        adj_checks = {
+            { dir = "right", end_symbol_idx = 6 },
+        },
+        only_2wins_symbols = {
+            start_down = "start_down",
+            end_down = "end_down",
+            start = "start_down",
+            both = "start_down",
+            center = "end_down",
+            end_sym = "end_down",
+        },
+    },
+    up = {
+        is_vertical = false,
+        size_fn = function()
+            return fn.winwidth(0)
+        end,
+        base_anchor = function(row, col)
+            return row - 1, col
+        end,
+        default_symbol = function()
+            return config.opts.border[1]
+        end,
+        adj_checks = {
+            { dir = "right", end_symbol_idx = 4 },
+        },
+        only_2wins_anchor = function(layout)
+            layout.anchor_col = layout.size - math.ceil(layout.size / 2)
+        end,
+        only_2wins_symbols = {
+            start_up = "start_up",
+            end_up = "end_up",
+            start = "start_up",
+            center = "start_up",
+            both = "start_up",
+            end_sym = "end_up",
+        },
+    },
+    right = {
+        is_vertical = true,
+        size_fn = function()
+            return fn.winheight(0)
+        end,
+        base_anchor = function(row, col)
+            return row, col + fn.winwidth(0)
+        end,
+        default_symbol = function()
+            return config.opts.border[2]
+        end,
+        adj_checks = {}, -- 右侧没有额外相邻检查（除 winbar）
+        only_2wins_symbols = {
+            start_right = "start_right",
+            end_right = "end_right",
+            start = "start_right",
+            both = "start_right",
+            center = "end_right",
+            end_sym = "end_right",
+        },
+    },
+}
+
 local function calculate_layout(dir, only_2wins)
     local current_row, current_col = unpack(api.nvim_win_get_position(0))
-    local sep_height = fn.winheight(0)
-    local sep_width = fn.winwidth(0)
+    local cfg = dir_config[dir]
 
     local layout = {
-        anchor_row = current_row,
-        anchor_col = current_col,
-        size = 0,
-        is_vertical = false,
-        start_symbol = "",
-        body_symbol = "",
-        end_symbol = ""
+        is_vertical = cfg.is_vertical,
+        size = cfg.size_fn(),
+        start_symbol = cfg.default_symbol(),
+        body_symbol = cfg.default_symbol(),
+        end_symbol = cfg.default_symbol(),
     }
+    layout.anchor_row, layout.anchor_col = cfg.base_anchor(current_row, current_col)
 
-    if dir == "left" then
-        layout.is_vertical = true
-        layout.anchor_col = current_col - 1
-        layout.size = sep_height
-        layout.start_symbol = config.opts.border[2]
-        layout.body_symbol = config.opts.border[2]
-        layout.end_symbol = config.opts.border[2]
-
-        if utils.has_winbar() then layout.size = layout.size + 1 end
-        if utils.has_adjacent_win(directions.up) then
-            layout.start_symbol = config.opts.border[3]
-            layout.size = layout.size + 1
-            layout.anchor_row = layout.anchor_row - 1
+    -- winbar 处理（垂直方向）或下方向的特殊偏移
+    if utils.has_winbar() and (dir == "left" or dir == "down" or dir == "right") then
+        layout.size = layout.size + 1
+        if dir == "down" then
+            layout.anchor_row = layout.anchor_row + 1
         end
-        if utils.has_adjacent_win(directions.down) then
-            layout.end_symbol = config.opts.border[5]
-            layout.size = layout.size + 1
+    end
+
+    -- 相邻窗口导致符号与锚点变化
+    for _, check in ipairs(cfg.adj_checks) do
+        if utils.has_adjacent_win(directions[check.dir]) then
+            if check.start_symbol_idx then
+                layout.start_symbol = config.opts.border[check.start_symbol_idx]
+            end
+            if check.end_symbol_idx then
+                layout.end_symbol = config.opts.border[check.end_symbol_idx]
+            end
+            if check.anchor_adj then
+                layout.anchor_row = layout.anchor_row + (check.anchor_adj.row or 0)
+                layout.anchor_col = layout.anchor_col + (check.anchor_adj.col or 0)
+            end
+            layout.size = layout.size + 1 -- 根据原逻辑，大多会尺寸+1
         end
+    end
 
-        if only_2wins then
-            layout.anchor_row = layout.size - math.ceil(layout.size / 2)
-            layout.size = math.ceil(layout.size / 2)
-            local pos = config.opts.indicator_for_2wins.position
-            local syms = config.opts.indicator_for_2wins.symbols
-            if pos == "center" or pos == "start" or pos == "both" then
-                layout.start_symbol = syms.start_left
-            end
-            if pos == "end" or pos == "both" then
-                layout.end_symbol = syms.end_left
-            end
+    -- 两窗口模式特殊处理
+    if only_2wins then
+        layout.size = math.ceil(layout.size / 2)
+        if cfg.only_2wins_anchor then
+            cfg.only_2wins_anchor(layout)
         end
-
-    elseif dir == "down" then
-        layout.is_vertical = false
-        layout.anchor_row = current_row + sep_height
-        layout.size = sep_width
-        layout.start_symbol = config.opts.border[1]
-        layout.body_symbol = config.opts.border[1]
-        layout.end_symbol = config.opts.border[1]
-
-        if utils.has_winbar() then layout.anchor_row = layout.anchor_row + 1 end
-        if utils.has_adjacent_win(directions.right) then
-            layout.end_symbol = config.opts.border[6]
-            layout.size = layout.size + 1
+        local pos = config.opts.indicator_for_2wins.position
+        local syms = config.opts.indicator_for_2wins.symbols
+        local map = cfg.only_2wins_symbols
+        if pos == "start" or pos == "both" then
+            layout.start_symbol = syms[map.start]
         end
-
-        if only_2wins then
-            layout.size = math.ceil(layout.size / 2)
-            local pos = config.opts.indicator_for_2wins.position
-            local syms = config.opts.indicator_for_2wins.symbols
-            if pos == "start" or pos == "both" then
-                layout.start_symbol = syms.start_down
-            end
-            if pos == "center" or pos == "end" or pos == "both" then
-                layout.end_symbol = syms.end_down
-            end
-        end
-
-    elseif dir == "up" then
-        layout.is_vertical = false
-        layout.anchor_row = current_row - 1
-        layout.size = sep_width
-        layout.start_symbol = config.opts.border[1]
-        layout.body_symbol = config.opts.border[1]
-        layout.end_symbol = config.opts.border[1]
-
-        if utils.has_adjacent_win(directions.right) then
-            layout.end_symbol = config.opts.border[4]
-            layout.size = layout.size + 1
-        end
-
-        if only_2wins then
-            layout.anchor_col = layout.size - math.ceil(layout.size / 2)
-            layout.size = math.ceil(layout.size / 2)
-            local pos = config.opts.indicator_for_2wins.position
-            local syms = config.opts.indicator_for_2wins.symbols
-            if pos == "center" or pos == "start" or pos == "both" then
-                layout.start_symbol = syms.start_up
-            end
-            if pos == "end" or pos == "both" then
-                layout.end_symbol = syms.end_up
-            end
-        end
-
-    elseif dir == "right" then
-        layout.is_vertical = true
-        layout.anchor_col = current_col + sep_width
-        layout.size = sep_height
-        layout.start_symbol = config.opts.border[2]
-        layout.body_symbol = config.opts.border[2]
-        layout.end_symbol = config.opts.border[2]
-
-        if utils.has_winbar() then layout.size = layout.size + 1 end
-
-        if only_2wins then
-            layout.size = math.ceil(layout.size / 2)
-            local pos = config.opts.indicator_for_2wins.position
-            local syms = config.opts.indicator_for_2wins.symbols
-            if pos == "start" or pos == "both" then
-                layout.start_symbol = syms.start_right
-            end
-            if pos == "center" or pos == "end" or pos == "both" then
-                layout.end_symbol = syms.end_right
-            end
+        if pos == "center" or pos == "end" or pos == "both" then
+            layout.end_symbol = syms[map.end_sym or map.center]
         end
     end
 
@@ -145,7 +178,7 @@ end
 function M.render()
     local only_2wins = (utils.count_windows() == 2)
     local dir_list = { "left", "down", "up", "right" }
-    
+
     local planned_layouts = {}
     -- pre-calculate before render
     for _, dir in ipairs(dir_list) do
@@ -174,7 +207,7 @@ function M.render()
         end
     end
 
-    -- render using direction array 
+    -- render using direction array
     for _, dir in ipairs(dir_list) do
         local layout = planned_layouts[dir]
         local sep = M.separators[dir]
@@ -183,7 +216,7 @@ function M.render()
             sep.start_symbol = layout.start_symbol
             sep.body_symbol = layout.body_symbol
             sep.end_symbol = layout.end_symbol
-            
+
             if layout.is_vertical then
                 sep:vertical_init(layout.size)
             else
