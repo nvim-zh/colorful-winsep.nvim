@@ -123,14 +123,28 @@ function M.set_colors(colors)
                             extmark_opts.end_row = 0
                             extmark_opts.end_col = byte_end
                             
-                            local target_char = virt_char or node.char
-                            local current_char = string.sub(lines[1], byte_start + 1, byte_end)
-                            if target_char and current_char ~= target_char then
-                                local new_line = string.sub(lines[1], 1, byte_start) .. target_char .. string.sub(lines[1], byte_end + 1)
-                                api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
+                            if virt_char then
+                                extmark_opts.virt_text = {{ virt_char, hl_group }}
+                                extmark_opts.virt_text_pos = "overlay"
                                 
-                                byte_end = byte_start + #target_char
-                                extmark_opts.end_col = byte_end
+                                -- keep original text in buffer
+                                local current_char = string.sub(lines[1], byte_start + 1, byte_end)
+                                if node.char and current_char ~= node.char then
+                                    local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
+                                    api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
+                                    
+                                    byte_end = byte_start + #node.char
+                                    extmark_opts.end_col = byte_end
+                                end
+                            else
+                                local current_char = string.sub(lines[1], byte_start + 1, byte_end)
+                                if target_char and current_char ~= target_char then
+                                    local new_line = string.sub(lines[1], 1, byte_start) .. target_char .. string.sub(lines[1], byte_end + 1)
+                                    api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
+                                    
+                                    byte_end = byte_start + #target_char
+                                    extmark_opts.end_col = byte_end
+                                end
                             end
                             api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, 0, byte_start, extmark_opts)
                         end
