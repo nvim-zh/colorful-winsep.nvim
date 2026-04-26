@@ -94,56 +94,54 @@ function M.set_colors(colors)
                         hl_group = hl_group,
                     }
 
+                    -- For horizontal/vertical lines without virt_text, hl_group represents the background color of the cell
+                    -- but since virt_text uses overlay, it places text *on top* of this cell.
+                    -- When virt_text is provided, we should ensure the base buffer highlight uses hl_group as well,
+                    -- unless the user intends otherwise. The virt_text already has hl_group applied in the array.
+
                     if node.win_dir == "left" or node.win_dir == "right" then
                         -- For vertical bars, `buf_idx` translates to line number (1-indexed)
                         if virt_char then
                             extmark_opts.virt_text = {{ virt_char, hl_group }}
                             extmark_opts.virt_text_pos = "overlay"
-                            
-                            -- Reset original character if we are using virt_text
-                            local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
-                            if old_line and node.char and old_line ~= node.char then
-                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
-                            end
-                        else
-                            local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
-                            if old_line and node.char and old_line ~= node.char then
-                                api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
-                            end
                         end
+
+                        local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
+                        -- Restore the base original character of the node, to allow virt_text overlay properly
+                        if old_line and node.char and old_line ~= node.char then
+                            -- Only attempt to replace if the old_line has the same width as node.char
+                            -- Vertical characters shouldn't suddenly become multiple bytes long 
+                            -- without careful subbing, but in vertical seps it's just one char per line usually.
+                            api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { node.char })
+                        end
+
                         api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, extmark_opts)
                     else
                         -- For horizontal bars, `buf_idx` translates to column position
                         local lines = api.nvim_buf_get_lines(sep.buffer, 0, 1, false)
                         if lines[1] then
+                            -- Only byte positions can be used to set extmarks
                             local byte_start = vim.fn.byteidx(lines[1], node.buf_idx - 1)
                             local byte_end = vim.fn.byteidx(lines[1], node.buf_idx)
                             
                             extmark_opts.end_row = 0
                             extmark_opts.end_col = byte_end
                             
+                            -- Restore the base original character of the node, to allow virt_text overlay properly
+                            local current_char = string.sub(lines[1], byte_start + 1, byte_end)
+                            if node.char and current_char ~= node.char then
+                                local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
+                                api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
+                                -- Update the line reference and byte_end since the character width may have changed
+                                lines[1] = new_line
+                                byte_end = byte_start + #node.char
+                                extmark_opts.end_col = byte_end
+                            end
+
                             if virt_char then
-                                -- keep original text in buffer
-                                local current_char = string.sub(lines[1], byte_start + 1, byte_end)
-                                if node.char and current_char ~= node.char then
-                                    local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
-                                    api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
-                                    
-                                    byte_end = byte_start + #node.char
-                                end
-                                
                                 extmark_opts.end_col = byte_start + #node.char
                                 extmark_opts.virt_text = {{ virt_char, hl_group }}
                                 extmark_opts.virt_text_pos = "overlay"
-                            else
-                                local current_char = string.sub(lines[1], byte_start + 1, byte_end)
-                                if node.char and current_char ~= node.char then
-                                    local new_line = string.sub(lines[1], 1, byte_start) .. node.char .. string.sub(lines[1], byte_end + 1)
-                                    api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
-                                    
-                                    byte_end = byte_start + #node.char
-                                    extmark_opts.end_col = byte_end
-                                end
                             end
                             api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, 0, byte_start, extmark_opts)
                         end
