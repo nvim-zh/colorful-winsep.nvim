@@ -53,11 +53,12 @@ function M.set_colors(colors)
         for i, c in ipairs(colors) do
             api.nvim_set_hl(0, "ColorfulWinSep_" .. i, { fg = c, bg = bg })
         end
-
+        
         M.marquee_offset = 0
         M.marquee_timer = vim.uv.new_timer()
         M.marquee_timer:start(0, 100, vim.schedule_wrap(function()
             if not M.enabled then return end
+            
             M.marquee_offset = (M.marquee_offset + 1) % #M.colors
             
             local nodes = view.border_model:get_nodes()
@@ -73,27 +74,54 @@ function M.set_colors(colors)
             -- Second pass: map global color index to each buffer
             for _, node in ipairs(nodes) do
                 local color_idx = ((node.index + M.marquee_offset) % #M.colors) + 1
+                local hl_group = "ColorfulWinSep_" .. color_idx
+
                 local sep = view.separators[node.win_dir]
                 
                 if sep and sep._show and api.nvim_buf_is_valid(sep.buffer) then
+                    local virt_char = nil
+                    
+                    -- Allow user to completely override char and hl_group per frame
+                    if config.opts.on_frame_render then
+                        local custom_char, custom_hl = config.opts.on_frame_render(node, color_idx, M.marquee_offset, #M.colors, #nodes)
+                        if custom_char then virt_char = custom_char end
+                        if custom_hl then hl_group = custom_hl end
+                    end
+
+                    local extmark_opts = {
+                        end_row = node.buf_idx,
+                        end_col = 0,
+                        hl_group = hl_group,
+                    }
+
                     if node.win_dir == "left" or node.win_dir == "right" then
                         -- For vertical bars, `buf_idx` translates to line number (1-indexed)
-                        api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, {
-                            end_row = node.buf_idx,
-                            end_col = 0,
-                            hl_group = "ColorfulWinSep_" .. color_idx,
-                        })
+                        local target_char = virt_char or node.char
+                        local old_line = api.nvim_buf_get_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false)[1]
+                        if old_line and target_char and old_line ~= target_char then
+                            api.nvim_buf_set_lines(sep.buffer, node.buf_idx - 1, node.buf_idx, false, { target_char })
+                        end
+                        api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, node.buf_idx - 1, 0, extmark_opts)
                     else
                         -- For horizontal bars, `buf_idx` translates to column position
                         local lines = api.nvim_buf_get_lines(sep.buffer, 0, 1, false)
                         if lines[1] then
                             local byte_start = vim.fn.byteidx(lines[1], node.buf_idx - 1)
                             local byte_end = vim.fn.byteidx(lines[1], node.buf_idx)
-                            api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, 0, byte_start, {
-                                end_row = 0,
-                                end_col = byte_end,
-                                hl_group = "ColorfulWinSep_" .. color_idx,
-                            })
+                            
+                            extmark_opts.end_row = 0
+                            extmark_opts.end_col = byte_end
+                            
+                            local target_char = virt_char or node.char
+                            local current_char = string.sub(lines[1], byte_start + 1, byte_end)
+                            if target_char and current_char ~= target_char then
+                                local new_line = string.sub(lines[1], 1, byte_start) .. target_char .. string.sub(lines[1], byte_end + 1)
+                                api.nvim_buf_set_lines(sep.buffer, 0, 1, false, { new_line })
+                                
+                                byte_end = byte_start + #target_char
+                                extmark_opts.end_col = byte_end
+                            end
+                            api.nvim_buf_set_extmark(sep.buffer, marquee_ns_id, 0, byte_start, extmark_opts)
                         end
                     end
                 end
