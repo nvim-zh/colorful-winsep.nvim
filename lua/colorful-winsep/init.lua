@@ -209,7 +209,11 @@ function M.setup(user_opts)
                 view.hide_all()
                 return
             end
-            vim.schedule(view.render)
+            vim.schedule(function()
+                if M.enabled then
+                    view.render()
+                end
+            end)
         end,
     })
 

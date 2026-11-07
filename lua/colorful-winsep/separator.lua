@@ -44,6 +44,7 @@ function Separator:new()
         timer = uv.new_timer(),
         _show = false,
         _animate_actived = false,
+        _hiding = false,
     }
 
     self.__index = self
@@ -233,6 +234,14 @@ end
 --- show the separator window
 function Separator:show()
     if api.nvim_buf_is_valid(self.buffer) then
+        if self.winid and api.nvim_win_is_valid(self.winid) then
+            if api.nvim_win_get_tabpage(self.winid) == api.nvim_get_current_tabpage() then
+                api.nvim_win_set_config(self.winid, self.window)
+                self._show = true
+                return
+            end
+            self:hide()
+        end
         local win = api.nvim_open_win(self.buffer, false, self.window)
         self.winid = win
         self._show = true
@@ -246,13 +255,22 @@ end
 
 --- hide the separator window
 function Separator:hide()
-    if self.winid ~= nil and api.nvim_win_is_valid(self.winid) then
-        api.nvim_win_hide(self.winid)
-        self.winid = nil
-        self:stop_animation()
-        utils.clear_extmarks(self.buffer)
-        self._show = false
+    if self._hiding then
+        return
     end
+    self._hiding = true
+    self.winid = nil
+    self._show = false
+    self:stop_animation()
+    for _, tab in ipairs(api.nvim_list_tabpages()) do
+        for _, win in ipairs(api.nvim_tabpage_list_wins(tab)) do
+            if api.nvim_win_is_valid(win) and api.nvim_win_get_buf(win) == self.buffer then
+                pcall(api.nvim_win_hide, win)
+            end
+        end
+    end
+    utils.clear_extmarks(self.buffer)
+    self._hiding = false
 end
 
 return Separator
